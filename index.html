@@ -1,23 +1,24 @@
+<!DOCTYPE html>
 <html lang="cs">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Moje investiční portfolio</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #121212;
-      color: #e0e0e0;
+      background-color: #1e1e1e;
+      color: #ccc;
     }
     header {
-      background-color: #1e1e1e;
-      color: #fff;
+      background-color: #111;
+      color: white;
       padding: 1rem;
       text-align: center;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     }
     .container {
       padding: 1rem;
@@ -28,38 +29,22 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
+      color: white;
     }
     th, td {
-      border: 1px solid #333;
+      border: 1px solid #444;
       padding: 0.5rem;
       text-align: left;
     }
     th {
-      background-color: #2c2c2c;
+      background-color: #333;
     }
-    select, input {
-      background-color: #2c2c2c;
-      color: #e0e0e0;
-      border: 1px solid #555;
-      padding: 0.4rem;
-      margin-bottom: 1rem;
+    .toggle {
+      float: right;
     }
     canvas {
+      background-color: #fff;
       margin-top: 2rem;
-      background: #1e1e1e;
-      border-radius: 8px;
-    }
-    button {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      background-color: #333;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #555;
     }
   </style>
 </head>
@@ -114,8 +99,7 @@
       </tbody>
     </table>
 
-    <canvas id="stockChart" width="1000" height="400"></canvas>
-    <button onclick="toggleRange()">Přepnout rozsah (6M / IPO)</button>
+    <canvas id="stockChart" width="900" height="400"></canvas>
   </div>
 
   <script>
@@ -145,82 +129,76 @@
       });
     });
 
-    let chart;
-    let range = "6mo";
+    function renderChart(ticker, buyPrice) {
+      const ctx = document.getElementById('stockChart').getContext('2d');
 
-    const mockData = {
-      AAPL: {
-        max: Array.from({length: 100}, (_, i) => ({x: new Date(2000 + i / 4, 0, 1), y: 50 + Math.sin(i / 5) * 40})),
-        short: Array.from({length: 180}, (_, i) => ({x: new Date(2023, 0, i), y: 150 + Math.sin(i / 15) * 30}))
-      },
-      MSFT: {
-        max: Array.from({length: 100}, (_, i) => ({x: new Date(1990 + i / 4, 0, 1), y: 30 + Math.cos(i / 7) * 50})),
-        short: Array.from({length: 180}, (_, i) => ({x: new Date(2023, 0, i), y: 250 + Math.cos(i / 10) * 20}))
+      if (window.myChart) {
+        window.myChart.destroy();
       }
-    };
 
-    function renderChart(ticker, purchasePrice) {
-      const data = mockData[ticker][range === "6mo" ? "short" : "max"];
-      const ctx = document.getElementById("stockChart").getContext("2d");
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
+      const now = new Date();
+      const months = 6;
+      const data = Array.from({ length: months }, (_, i) => {
+        const date = new Date(now.getFullYear(), now.getMonth() - (months - i), 1);
+        return {
+          x: date,
+          y: (buyPrice * (0.9 + 0.2 * Math.random())).toFixed(2)
+        };
+      });
+
+      window.myChart = new Chart(ctx, {
         type: 'line',
         data: {
           datasets: [
             {
-              label: ticker + " cena",
+              label: `${ticker} cena`,
               data: data,
-              borderColor: '#4bc0c0',
-              backgroundColor: 'rgba(75,192,192,0.1)',
-              tension: 0.3
+              borderColor: 'aqua',
+              tension: 0.3,
+              pointRadius: 0
             },
             {
-              label: "Koupeno za $" + purchasePrice,
-              data: data.map(point => ({x: point.x, y: purchasePrice})),
-              borderColor: '#ff6384',
+              label: 'Nákupní cena',
+              data: [
+                { x: data[0].x, y: buyPrice },
+                { x: data[data.length - 1].x, y: buyPrice }
+              ],
+              borderColor: 'red',
               borderDash: [5, 5],
-              pointRadius: 0,
-              fill: false
+              fill: false,
+              pointRadius: 0
             }
           ]
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: {
-              labels: {
-                color: '#e0e0e0'
-              }
-            }
-          },
           scales: {
             x: {
               type: 'time',
               time: {
                 unit: 'month'
               },
-              ticks: {
-                color: '#e0e0e0'
+              title: {
+                display: true,
+                text: 'Datum'
               }
             },
             y: {
-              ticks: {
-                color: '#e0e0e0'
+              title: {
+                display: true,
+                text: 'Cena (USD)'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: 'white'
               }
             }
           }
         }
       });
-    }
-
-    function toggleRange() {
-      range = range === "6mo" ? "max" : "6mo";
-      const activeRow = document.querySelector("#portfolio tbody tr:hover");
-      if (activeRow) {
-        const ticker = activeRow.children[2].textContent;
-        const price = parseFloat(activeRow.children[4].textContent);
-        renderChart(ticker, price);
-      }
     }
   </script>
 </body>
