@@ -7,41 +7,57 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f5f5f5;
-      color: #333;
     }
     header {
-      background-color: #222;
-      color: white;
+      background-color: #1f1f1f;
       padding: 1rem;
       text-align: center;
+      border-bottom: 1px solid #333;
     }
     .container {
-      padding: 1rem;
-      max-width: 1200px;
-      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      padding: 2rem;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 1rem;
+      margin-bottom: 1rem;
     }
     th, td {
-      border: 1px solid #ccc;
+      border: 1px solid #333;
       padding: 0.5rem;
       text-align: left;
     }
     th {
-      background-color: #eee;
+      background-color: #2a2a2a;
     }
-    #search {
-      float: right;
+    input, select {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+      color: #e0e0e0;
     }
-    .chart-container {
-      margin-top: 2rem;
+    canvas {
+      background-color: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .section {
+      margin-bottom: 2rem;
+    }
+    .highlight {
+      border-left: 4px solid #03dac5;
+      padding-left: 1rem;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
@@ -49,125 +65,145 @@
   <header>
     <h1>Moje investiční portfolio</h1>
   </header>
-
   <div class="container">
-    <label for="currency">Měna:</label>
-    <select id="currency">
-      <option value="USD">USD</option>
-      <option value="CZK">CZK</option>
-    </select>
-
-    <input type="text" id="search" placeholder="Hledat akcie..." />
-
-    <table id="portfolio">
-      <thead>
-        <tr>
-          <th>Logo</th>
-          <th>Název</th>
-          <th>Ticker</th>
-          <th>Počet</th>
-          <th>Cena (USD)</th>
-          <th>Hodnota</th>
-          <th>Div. výnos</th>
-          <th>Dividenda ročně</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><img src="https://logo.clearbit.com/apple.com" alt="Apple" width="32" /></td>
-          <td>Apple</td>
-          <td>AAPL</td>
-          <td>5</td>
-          <td>180</td>
-          <td class="value" data-usd="900">900</td>
-          <td>0.5%</td>
-          <td>4.5</td>
-        </tr>
-        <tr>
-          <td><img src="https://logo.clearbit.com/microsoft.com" alt="Microsoft" width="32" /></td>
-          <td>Microsoft</td>
-          <td>MSFT</td>
-          <td>3</td>
-          <td>350</td>
-          <td class="value" data-usd="1050">1050</td>
-          <td>0.8%</td>
-          <td>8.4</td>
-        </tr>
-        <tr>
-          <td><img src="https://logo.clearbit.com/britishamerican.com" alt="BTI" width="32" /></td>
-          <td>British American Tobacco</td>
-          <td>BTI</td>
-          <td>40</td>
-          <td>31.90</td>
-          <td class="value" data-usd="1276">1276</td>
-          <td>9.5%</td>
-          <td>121.2</td>
-        </tr>
-        <tr>
-          <td><img src="https://logo.clearbit.com/realityincome.com" alt="Realty Income" width="32" /></td>
-          <td>Realty Income</td>
-          <td>O</td>
-          <td>28</td>
-          <td>53.20</td>
-          <td class="value" data-usd="1490">1490</td>
-          <td>5.7%</td>
-          <td>84.0</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="chart-container">
-      <h2>Rozložení portfolia (USD)</h2>
-      <canvas id="portfolioChart"></canvas>
+    <div>
+      <div class="section">
+        <label for="currency">Měna:</label>
+        <select id="currency">
+          <option value="USD">USD</option>
+          <option value="CZK">CZK</option>
+        </select>
+        <input type="text" id="search" placeholder="Hledat akcie..." style="width: 100%;" />
+      </div>
+      <table id="portfolio">
+        <thead>
+          <tr>
+            <th>Logo</th>
+            <th>Ticker</th>
+            <th>Počet</th>
+            <th>Nákupní cena</th>
+            <th>Aktuální cena</th>
+            <th>Hodnota</th>
+            <th>Div. výnos</th>
+          </tr>
+        </thead>
+        <tbody id="portfolio-body">
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="section highlight">
+        <h3>Graf ceny akcie</h3>
+        <canvas id="stockChart" width="400" height="200"></canvas>
+      </div>
+      <div class="section highlight">
+        <h3>Dividendový kalendář</h3>
+        <ul id="dividend-calendar"></ul>
+      </div>
     </div>
   </div>
-
   <script>
-    const currencySelect = document.getElementById("currency");
-    const values = document.querySelectorAll(".value");
+    const data = [
+      { ticker: 'BTI', shares: 319, buyPrice: 32.60, currentPrice: 46.67, yield: 6.34, logo: 'bat.com' },
+      { ticker: 'O', shares: 211, buyPrice: 53.96, currentPrice: 57.80, yield: 5.59, logo: 'realtyincome.com' },
+      { ticker: 'AMD', shares: 10, buyPrice: 86.82, currentPrice: 163.41, yield: 0.00, logo: 'amd.com' }
+    ];
+
     const exchangeRate = 23.5;
+    const tableBody = document.getElementById('portfolio-body');
+    const currencySelect = document.getElementById('currency');
+    const searchInput = document.getElementById('search');
 
-    currencySelect.addEventListener("change", () => {
+    function renderTable() {
+      tableBody.innerHTML = '';
       const currency = currencySelect.value;
-      values.forEach(cell => {
-        const usd = parseFloat(cell.dataset.usd);
-        if (currency === "CZK") {
-          cell.textContent = (usd * exchangeRate).toFixed(2);
-        } else {
-          cell.textContent = usd.toFixed(2);
-        }
+      data.forEach(stock => {
+        if (!stock.ticker.toLowerCase().includes(searchInput.value.toLowerCase())) return;
+        const value = stock.shares * stock.currentPrice;
+        const price = currency === 'CZK' ? (stock.currentPrice * exchangeRate).toFixed(2) : stock.currentPrice.toFixed(2);
+        const buy = currency === 'CZK' ? (stock.buyPrice * exchangeRate).toFixed(2) : stock.buyPrice.toFixed(2);
+        const total = currency === 'CZK' ? (value * exchangeRate).toFixed(2) : value.toFixed(2);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><img src="https://logo.clearbit.com/${stock.logo}" width="24"></td>
+          <td><a href="#" onclick="renderChart('${stock.ticker}', ${stock.buyPrice})">${stock.ticker}</a></td>
+          <td>${stock.shares}</td>
+          <td>${buy} ${currency}</td>
+          <td>${price} ${currency}</td>
+          <td>${total} ${currency}</td>
+          <td>${stock.yield}%</td>
+        `;
+        tableBody.appendChild(tr);
       });
-    });
+    }
 
-    const searchInput = document.getElementById("search");
-    searchInput.addEventListener("input", () => {
-      const filter = searchInput.value.toLowerCase();
-      const rows = document.querySelectorAll("#portfolio tbody tr");
-      rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(filter) ? "" : "none";
-      });
-    });
+    currencySelect.addEventListener('change', renderTable);
+    searchInput.addEventListener('input', renderTable);
 
-    const ctx = document.getElementById("portfolioChart").getContext("2d");
-    const chart = new Chart(ctx, {
-      type: "pie",
-      data: {
-        labels: ["Apple", "Microsoft", "BTI", "Realty Income"],
-        datasets: [{
-          label: "Hodnota (USD)",
-          data: [900, 1050, 1276, 1490],
-          backgroundColor: ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2"]
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: "bottom"
+    renderTable();
+
+    let chart;
+    function renderChart(ticker, buyPrice) {
+      const ctx = document.getElementById('stockChart').getContext('2d');
+      const labels = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen'];
+      const prices = labels.map((_, i) => buyPrice + Math.random() * 10 + i);
+
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: `Cena ${ticker}`,
+              data: prices,
+              borderColor: '#03dac5',
+              borderWidth: 2,
+              fill: false
+            },
+            {
+              label: 'Nákupní cena',
+              data: Array(prices.length).fill(buyPrice),
+              borderColor: '#ff0266',
+              borderDash: [5, 5],
+              borderWidth: 1,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#e0e0e0'
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#e0e0e0' }
+            },
+            y: {
+              ticks: { color: '#e0e0e0' }
+            }
           }
         }
-      }
+      });
+    }
+
+    const dividendCalendar = document.getElementById('dividend-calendar');
+    const dividends = [
+      { ticker: 'BTI', month: 'Červenec', amount: 50 },
+      { ticker: 'O', month: 'Srpen', amount: 45 },
+      { ticker: 'AMD', month: 'Září', amount: 0 }
+    ];
+
+    dividends.forEach(div => {
+      const li = document.createElement('li');
+      li.textContent = `${div.month}: ${div.ticker} – ${div.amount} USD`;
+      dividendCalendar.appendChild(li);
     });
   </script>
 </body>
