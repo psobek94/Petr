@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="cs">
 <head>
   <meta charset="UTF-8" />
@@ -7,28 +6,28 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      background-color: #121212;
-      color: #e0e0e0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
+      background-color: #121212;
+      color: #e0e0e0;
     }
     header {
-      background-color: #1f1f1f;
+      background-color: #1e1e1e;
+      color: #fff;
       padding: 1rem;
       text-align: center;
-      border-bottom: 1px solid #333;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     }
     .container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      padding: 2rem;
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 1rem;
+      margin-top: 1rem;
     }
     th, td {
       border: 1px solid #333;
@@ -36,28 +35,31 @@
       text-align: left;
     }
     th {
-      background-color: #2a2a2a;
+      background-color: #2c2c2c;
     }
-    input, select {
-      padding: 0.5rem;
-      margin: 0.5rem 0;
-      background-color: #1e1e1e;
-      border: 1px solid #444;
+    select, input {
+      background-color: #2c2c2c;
       color: #e0e0e0;
+      border: 1px solid #555;
+      padding: 0.4rem;
+      margin-bottom: 1rem;
     }
     canvas {
-      background-color: #1a1a1a;
-      border: 1px solid #333;
+      margin-top: 2rem;
+      background: #1e1e1e;
       border-radius: 8px;
-      padding: 1rem;
     }
-    .section {
-      margin-bottom: 2rem;
+    button {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
-    .highlight {
-      border-left: 4px solid #03dac5;
-      padding-left: 1rem;
-      margin-bottom: 1rem;
+    button:hover {
+      background-color: #555;
     }
   </style>
 </head>
@@ -65,109 +67,119 @@
   <header>
     <h1>Moje investiční portfolio</h1>
   </header>
+
   <div class="container">
-    <div>
-      <div class="section">
-        <label for="currency">Měna:</label>
-        <select id="currency">
-          <option value="USD">USD</option>
-          <option value="CZK">CZK</option>
-        </select>
-        <input type="text" id="search" placeholder="Hledat akcie..." style="width: 100%;" />
-      </div>
-      <table id="portfolio">
-        <thead>
-          <tr>
-            <th>Logo</th>
-            <th>Ticker</th>
-            <th>Počet</th>
-            <th>Nákupní cena</th>
-            <th>Aktuální cena</th>
-            <th>Hodnota</th>
-            <th>Div. výnos</th>
-          </tr>
-        </thead>
-        <tbody id="portfolio-body">
-        </tbody>
-      </table>
-    </div>
-    <div>
-      <div class="section highlight">
-        <h3>Graf ceny akcie</h3>
-        <canvas id="stockChart" width="400" height="200"></canvas>
-      </div>
-      <div class="section highlight">
-        <h3>Dividendový kalendář</h3>
-        <ul id="dividend-calendar"></ul>
-      </div>
-    </div>
+    <label for="currency">Měna:</label>
+    <select id="currency">
+      <option value="USD">USD</option>
+      <option value="CZK">CZK</option>
+    </select>
+
+    <input type="text" id="search" placeholder="Hledat akcie..." style="float:right;"/>
+
+    <table id="portfolio">
+      <thead>
+        <tr>
+          <th>Logo</th>
+          <th>Název</th>
+          <th>Ticker</th>
+          <th>Počet</th>
+          <th>Cena (USD)</th>
+          <th>Hodnota</th>
+          <th>Div. výnos</th>
+          <th>Dividenda ročně</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr onclick="renderChart('AAPL', 180)">
+          <td><img src="https://logo.clearbit.com/apple.com" alt="Apple" width="32" /></td>
+          <td>Apple</td>
+          <td>AAPL</td>
+          <td>5</td>
+          <td>180</td>
+          <td class="value" data-usd="900">900</td>
+          <td>0.5%</td>
+          <td>4.5</td>
+        </tr>
+        <tr onclick="renderChart('MSFT', 350)">
+          <td><img src="https://logo.clearbit.com/microsoft.com" alt="Microsoft" width="32" /></td>
+          <td>Microsoft</td>
+          <td>MSFT</td>
+          <td>3</td>
+          <td>350</td>
+          <td class="value" data-usd="1050">1050</td>
+          <td>0.8%</td>
+          <td>8.4</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <canvas id="stockChart" width="1000" height="400"></canvas>
+    <button onclick="toggleRange()">Přepnout rozsah (6M / IPO)</button>
   </div>
+
   <script>
-    const data = [
-      { ticker: 'BTI', shares: 319, buyPrice: 32.60, currentPrice: 46.67, yield: 6.34, logo: 'bat.com' },
-      { ticker: 'O', shares: 211, buyPrice: 53.96, currentPrice: 57.80, yield: 5.59, logo: 'realtyincome.com' },
-      { ticker: 'AMD', shares: 10, buyPrice: 86.82, currentPrice: 163.41, yield: 0.00, logo: 'amd.com' }
-    ];
-
+    const currencySelect = document.getElementById("currency");
+    const values = document.querySelectorAll(".value");
     const exchangeRate = 23.5;
-    const tableBody = document.getElementById('portfolio-body');
-    const currencySelect = document.getElementById('currency');
-    const searchInput = document.getElementById('search');
 
-    function renderTable() {
-      tableBody.innerHTML = '';
+    currencySelect.addEventListener("change", () => {
       const currency = currencySelect.value;
-      data.forEach(stock => {
-        if (!stock.ticker.toLowerCase().includes(searchInput.value.toLowerCase())) return;
-        const value = stock.shares * stock.currentPrice;
-        const price = currency === 'CZK' ? (stock.currentPrice * exchangeRate).toFixed(2) : stock.currentPrice.toFixed(2);
-        const buy = currency === 'CZK' ? (stock.buyPrice * exchangeRate).toFixed(2) : stock.buyPrice.toFixed(2);
-        const total = currency === 'CZK' ? (value * exchangeRate).toFixed(2) : value.toFixed(2);
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><img src="https://logo.clearbit.com/${stock.logo}" width="24"></td>
-          <td><a href="#" onclick="renderChart('${stock.ticker}', ${stock.buyPrice})">${stock.ticker}</a></td>
-          <td>${stock.shares}</td>
-          <td>${buy} ${currency}</td>
-          <td>${price} ${currency}</td>
-          <td>${total} ${currency}</td>
-          <td>${stock.yield}%</td>
-        `;
-        tableBody.appendChild(tr);
+      values.forEach(cell => {
+        const usd = parseFloat(cell.dataset.usd);
+        if (currency === "CZK") {
+          cell.textContent = (usd * exchangeRate).toFixed(2);
+        } else {
+          cell.textContent = usd.toFixed(2);
+        }
       });
-    }
+    });
 
-    currencySelect.addEventListener('change', renderTable);
-    searchInput.addEventListener('input', renderTable);
-
-    renderTable();
+    const searchInput = document.getElementById("search");
+    searchInput.addEventListener("input", () => {
+      const filter = searchInput.value.toLowerCase();
+      const rows = document.querySelectorAll("#portfolio tbody tr");
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      });
+    });
 
     let chart;
-    function renderChart(ticker, buyPrice) {
-      const ctx = document.getElementById('stockChart').getContext('2d');
-      const labels = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen'];
-      const prices = labels.map((_, i) => buyPrice + Math.random() * 10 + i);
+    let range = "6mo";
 
+    const mockData = {
+      AAPL: {
+        max: Array.from({length: 100}, (_, i) => ({x: new Date(2000 + i / 4, 0, 1), y: 50 + Math.sin(i / 5) * 40})),
+        short: Array.from({length: 180}, (_, i) => ({x: new Date(2023, 0, i), y: 150 + Math.sin(i / 15) * 30}))
+      },
+      MSFT: {
+        max: Array.from({length: 100}, (_, i) => ({x: new Date(1990 + i / 4, 0, 1), y: 30 + Math.cos(i / 7) * 50})),
+        short: Array.from({length: 180}, (_, i) => ({x: new Date(2023, 0, i), y: 250 + Math.cos(i / 10) * 20}))
+      }
+    };
+
+    function renderChart(ticker, purchasePrice) {
+      const data = mockData[ticker][range === "6mo" ? "short" : "max"];
+      const ctx = document.getElementById("stockChart").getContext("2d");
       if (chart) chart.destroy();
-
       chart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels,
           datasets: [
             {
-              label: `Cena ${ticker}`,
-              data: prices,
-              borderColor: '#03dac5',
-              borderWidth: 2,
-              fill: false
+              label: ticker + " cena",
+              data: data,
+              borderColor: '#4bc0c0',
+              backgroundColor: 'rgba(75,192,192,0.1)',
+              tension: 0.3
             },
             {
-              label: 'Nákupní cena',
-              data: Array(prices.length).fill(buyPrice),
-              borderColor: '#ff0266',
+              label: "Koupeno za $" + purchasePrice,
+              data: data.map(point => ({x: point.x, y: purchasePrice})),
+              borderColor: '#ff6384',
               borderDash: [5, 5],
-              borderWidth: 1,
+              pointRadius: 0,
               fill: false
             }
           ]
@@ -183,28 +195,33 @@
           },
           scales: {
             x: {
-              ticks: { color: '#e0e0e0' }
+              type: 'time',
+              time: {
+                unit: 'month'
+              },
+              ticks: {
+                color: '#e0e0e0'
+              }
             },
             y: {
-              ticks: { color: '#e0e0e0' }
+              ticks: {
+                color: '#e0e0e0'
+              }
             }
           }
         }
       });
     }
 
-    const dividendCalendar = document.getElementById('dividend-calendar');
-    const dividends = [
-      { ticker: 'BTI', month: 'Červenec', amount: 50 },
-      { ticker: 'O', month: 'Srpen', amount: 45 },
-      { ticker: 'AMD', month: 'Září', amount: 0 }
-    ];
-
-    dividends.forEach(div => {
-      const li = document.createElement('li');
-      li.textContent = `${div.month}: ${div.ticker} – ${div.amount} USD`;
-      dividendCalendar.appendChild(li);
-    });
+    function toggleRange() {
+      range = range === "6mo" ? "max" : "6mo";
+      const activeRow = document.querySelector("#portfolio tbody tr:hover");
+      if (activeRow) {
+        const ticker = activeRow.children[2].textContent;
+        const price = parseFloat(activeRow.children[4].textContent);
+        renderChart(ticker, price);
+      }
+    }
   </script>
 </body>
 </html>
