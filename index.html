@@ -4,18 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Moje investiční portfolio</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #1e1e1e;
-      color: #ccc;
+      background-color: #121212;
+      color: #f0f0f0;
     }
     header {
-      background-color: #111;
+      background-color: #1f1f1f;
       color: white;
       padding: 1rem;
       text-align: center;
@@ -32,18 +31,25 @@
       color: white;
     }
     th, td {
-      border: 1px solid #444;
+      border: 1px solid #333;
       padding: 0.5rem;
       text-align: left;
     }
     th {
+      background-color: #222;
+    }
+    .btn-group button {
       background-color: #333;
+      color: white;
+      border: 1px solid #444;
+      padding: 5px 10px;
+      cursor: pointer;
+      margin-right: 5px;
     }
-    .toggle {
-      float: right;
+    .btn-group button.active {
+      background-color: #555;
     }
-    canvas {
-      background-color: #fff;
+    #chart {
       margin-top: 2rem;
     }
   </style>
@@ -54,14 +60,6 @@
   </header>
 
   <div class="container">
-    <label for="currency">Měna:</label>
-    <select id="currency">
-      <option value="USD">USD</option>
-      <option value="CZK">CZK</option>
-    </select>
-
-    <input type="text" id="search" placeholder="Hledat akcie..." style="float:right;"/>
-
     <table id="portfolio">
       <thead>
         <tr>
@@ -71,134 +69,136 @@
           <th>Počet</th>
           <th>Cena (USD)</th>
           <th>Hodnota</th>
-          <th>Div. výnos</th>
-          <th>Dividenda ročně</th>
         </tr>
       </thead>
       <tbody>
-        <tr onclick="renderChart('AAPL', 180)">
+        <tr onclick="showChart('AAPL')">
           <td><img src="https://logo.clearbit.com/apple.com" alt="Apple" width="32" /></td>
           <td>Apple</td>
           <td>AAPL</td>
-          <td>5</td>
-          <td>180</td>
-          <td class="value" data-usd="900">900</td>
-          <td>0.5%</td>
-          <td>4.5</td>
-        </tr>
-        <tr onclick="renderChart('MSFT', 350)">
-          <td><img src="https://logo.clearbit.com/microsoft.com" alt="Microsoft" width="32" /></td>
-          <td>Microsoft</td>
-          <td>MSFT</td>
-          <td>3</td>
-          <td>350</td>
-          <td class="value" data-usd="1050">1050</td>
-          <td>0.8%</td>
-          <td>8.4</td>
+          <td>10</td>
+          <td>146</td>
+          <td>1460</td>
         </tr>
       </tbody>
     </table>
 
-    <canvas id="stockChart" width="900" height="400"></canvas>
+    <div class="btn-group" id="rangeButtons">
+      <button onclick="updateChart('1D')">1D</button>
+      <button onclick="updateChart('5D')">5D</button>
+      <button onclick="updateChart('1M')">1M</button>
+      <button onclick="updateChart('3M')">3M</button>
+      <button onclick="updateChart('6M')">6M</button>
+      <button onclick="updateChart('1Y')">1Y</button>
+      <button onclick="updateChart('5Y')">5Y</button>
+      <button onclick="updateChart('MAX')">MAX</button>
+    </div>
+
+    <div id="chart"></div>
   </div>
 
   <script>
-    const currencySelect = document.getElementById("currency");
-    const values = document.querySelectorAll(".value");
-    const exchangeRate = 23.5;
+    let chart;
+    const purchaseDate = new Date("2024-01-10");
+    const purchasePrice = 146;
 
-    currencySelect.addEventListener("change", () => {
-      const currency = currencySelect.value;
-      values.forEach(cell => {
-        const usd = parseFloat(cell.dataset.usd);
-        if (currency === "CZK") {
-          cell.textContent = (usd * exchangeRate).toFixed(2);
-        } else {
-          cell.textContent = usd.toFixed(2);
-        }
-      });
-    });
+    function generateMockData(range) {
+      const now = new Date();
+      const data = [];
+      let points;
 
-    const searchInput = document.getElementById("search");
-    searchInput.addEventListener("input", () => {
-      const filter = searchInput.value.toLowerCase();
-      const rows = document.querySelectorAll("#portfolio tbody tr");
-      rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(filter) ? "" : "none";
-      });
-    });
-
-    function renderChart(ticker, buyPrice) {
-      const ctx = document.getElementById('stockChart').getContext('2d');
-
-      if (window.myChart) {
-        window.myChart.destroy();
+      switch(range) {
+        case '1D': points = 24; break;
+        case '5D': points = 5; break;
+        case '1M': points = 30; break;
+        case '3M': points = 90; break;
+        case '6M': points = 180; break;
+        case '1Y': points = 365; break;
+        case '5Y': points = 1825; break;
+        case 'MAX': points = 3650; break;
       }
 
-      const now = new Date();
-      const months = 6;
-      const data = Array.from({ length: months }, (_, i) => {
-        const date = new Date(now.getFullYear(), now.getMonth() - (months - i), 1);
-        return {
-          x: date,
-          y: (buyPrice * (0.9 + 0.2 * Math.random())).toFixed(2)
-        };
-      });
+      for (let i = points - 1; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        data.push({ x: date.getTime(), y: (purchasePrice * (0.85 + Math.random() * 0.3)).toFixed(2) });
+      }
+      return data;
+    }
 
-      window.myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          datasets: [
-            {
-              label: `${ticker} cena`,
-              data: data,
-              borderColor: 'aqua',
-              tension: 0.3,
-              pointRadius: 0
-            },
-            {
-              label: 'Nákupní cena',
-              data: [
-                { x: data[0].x, y: buyPrice },
-                { x: data[data.length - 1].x, y: buyPrice }
-              ],
-              borderColor: 'red',
-              borderDash: [5, 5],
-              fill: false,
-              pointRadius: 0
-            }
-          ]
+    function showChart(ticker) {
+      document.getElementById("rangeButtons").style.display = "block";
+      const seriesData = generateMockData('1M');
+      const line = [
+        { x: seriesData[0].x, y: purchasePrice },
+        { x: seriesData[seriesData.length - 1].x, y: purchasePrice }
+      ];
+
+      const options = {
+        chart: {
+          type: 'line',
+          height: 400,
+          foreColor: '#ccc',
+          background: '#1e1e1e'
         },
-        options: {
-          responsive: true,
-          scales: {
-            x: {
-              type: 'time',
-              time: {
-                unit: 'month'
-              },
-              title: {
-                display: true,
-                text: 'Datum'
-              }
-            },
-            y: {
-              title: {
-                display: true,
-                text: 'Cena (USD)'
-              }
-            }
+        series: [
+          {
+            name: ticker,
+            data: seriesData
           },
-          plugins: {
-            legend: {
-              labels: {
-                color: 'white'
-              }
+          {
+            name: "Nákup",
+            data: line,
+            color: 'red',
+            stroke: {
+              dashArray: 5
             }
           }
+        ],
+        xaxis: {
+          type: 'datetime'
+        },
+        stroke: {
+          width: [2, 2],
+          dashArray: [0, 5]
+        },
+        tooltip: {
+          x: {
+            format: 'dd MMM yyyy'
+          }
         }
-      });
+      };
+
+      if (chart) {
+        chart.updateOptions(options);
+      } else {
+        chart = new ApexCharts(document.querySelector("#chart"), options);
+        chart.render();
+      }
+    }
+
+    function updateChart(range) {
+      const buttons = document.querySelectorAll(".btn-group button");
+      buttons.forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+
+      const seriesData = generateMockData(range);
+      const line = [
+        { x: seriesData[0].x, y: purchasePrice },
+        { x: seriesData[seriesData.length - 1].x, y: purchasePrice }
+      ];
+
+      chart.updateSeries([
+        {
+          name: "AAPL",
+          data: seriesData
+        },
+        {
+          name: "Nákup",
+          data: line,
+          color: 'red'
+        }
+      ]);
     }
   </script>
 </body>
