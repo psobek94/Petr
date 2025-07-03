@@ -203,3 +203,98 @@
   </script>
 </body>
 </html>
+<!-- Dividendová sekce -->
+<div class="container">
+  <h2>📅 Dividendový kalendář</h2>
+
+  <label for="monthSelect">Zobrazit měsíc:</label>
+  <select id="monthSelect">
+    <option value="all">Vše</option>
+    <option value="2025-07">Červenec 2025</option>
+    <option value="2025-08">Srpen 2025</option>
+    <!-- přidej další dle potřeby -->
+  </select>
+
+  <table id="dividendTable">
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Název</th>
+        <th>Ex-div date</th>
+        <th>Payment date</th>
+        <th>Částka (USD)</th>
+        <th>Frekvence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr data-month="2025-07">
+        <td>BTI</td>
+        <td>British American Tobacco</td>
+        <td>2025-07-10</td>
+        <td>2025-08-04</td>
+        <td>0.73</td>
+        <td>Kvartálně</td>
+      </tr>
+      <tr data-month="2025-08">
+        <td>O</td>
+        <td>Realty Income</td>
+        <td>2025-08-15</td>
+        <td>2025-09-01</td>
+        <td>0.25</td>
+        <td>Měsíčně</td>
+      </tr>
+      <!-- Další dividendy -->
+    </tbody>
+  </table>
+
+  <canvas id="dividendChart" style="margin-top:2rem;"></canvas>
+</div>
+
+<!-- 📊 Graf + Logika -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Filtrace podle měsíce
+  const monthSelect = document.getElementById("monthSelect");
+  monthSelect.addEventListener("change", () => {
+    const selected = monthSelect.value;
+    document.querySelectorAll("#dividendTable tbody tr").forEach(row => {
+      row.style.display = (selected === "all" || row.dataset.month === selected) ? "" : "none";
+    });
+  });
+
+  // Měsíční součet pro graf
+  const dividendData = [
+    { month: "2025-05", amount: 6.25 },
+    { month: "2025-06", amount: 12.50 },
+    { month: "2025-07", amount: 18.75 },
+    { month: "2025-08", amount: 22.00 },
+    { month: "2025-09", amount: 25.40 },
+  ];
+
+  const ctx = document.getElementById("dividendChart").getContext("2d");
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: dividendData.map(d => d.month),
+      datasets: [{
+        label: "Vyplacené dividendy (USD)",
+        data: dividendData.map(d => d.amount),
+        backgroundColor: "rgba(0, 150, 255, 0.7)"
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `$${ctx.raw.toFixed(2)}` } }
+      },
+      scales: {
+        x: { ticks: { color: "#ddd" } },
+        y: {
+          ticks: { color: "#ddd" },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
