@@ -36,12 +36,15 @@
     th {
       background-color: #21262d;
     }
-    select, input[type="text"] {
+    select, input[type="text"], input[type="number"], input[type="date"], button {
       background-color: #161b22;
       color: #ddd;
       border: 1px solid #30363d;
       padding: 0.3rem;
       margin: 0.5rem 0;
+    }
+    button {
+      cursor: pointer;
     }
   </style>
 </head>
@@ -140,6 +143,34 @@
     <canvas id="dividendChart" style="margin-top:2rem;"></canvas>
   </div>
 
+  <div class="container">
+    <h2>📊 Transakční historie</h2>
+    <form id="transactionForm">
+      <input type="text" id="ticker" placeholder="Ticker" required />
+      <input type="number" id="quantity" placeholder="Počet" required />
+      <input type="number" id="price" placeholder="Cena za kus (USD)" required />
+      <input type="date" id="date" required />
+      <select id="type">
+        <option value="buy">Nákup</option>
+        <option value="sell">Prodej</option>
+      </select>
+      <button type="submit">Přidat</button>
+    </form>
+
+    <table id="transactionTable">
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Ticker</th>
+          <th>Počet</th>
+          <th>Cena za kus (USD)</th>
+          <th>Typ</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const currencySelect = document.getElementById("currency");
@@ -158,19 +189,15 @@
       });
     });
 
-    const searchInput = document.getElementById("search");
-    searchInput.addEventListener("input", () => {
-      const filter = searchInput.value.toLowerCase();
-      const rows = document.querySelectorAll("#portfolio tbody tr");
-      rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(filter) ? "" : "none";
+    document.getElementById("search").addEventListener("input", e => {
+      const filter = e.target.value.toLowerCase();
+      document.querySelectorAll("#portfolio tbody tr").forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
       });
     });
 
-    const monthSelect = document.getElementById("monthSelect");
-    monthSelect.addEventListener("change", () => {
-      const selected = monthSelect.value;
+    document.getElementById("monthSelect").addEventListener("change", e => {
+      const selected = e.target.value;
       document.querySelectorAll("#dividendTable tbody tr").forEach(row => {
         row.style.display = (selected === "all" || row.dataset.month === selected) ? "" : "none";
       });
@@ -184,8 +211,7 @@
       { month: "2025-09", amount: 25.40 },
     ];
 
-    const ctx = document.getElementById("dividendChart").getContext("2d");
-    new Chart(ctx, {
+    new Chart(document.getElementById("dividendChart").getContext("2d"), {
       type: "bar",
       data: {
         labels: dividendData.map(d => d.month),
@@ -225,6 +251,29 @@
           padding: 10
         }
       }
+    });
+
+    const transactionForm = document.getElementById("transactionForm");
+    const transactionTable = document.getElementById("transactionTable").querySelector("tbody");
+
+    transactionForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const ticker = document.getElementById("ticker").value;
+      const quantity = document.getElementById("quantity").value;
+      const price = document.getElementById("price").value;
+      const date = document.getElementById("date").value;
+      const type = document.getElementById("type").value;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${date}</td>
+        <td>${ticker}</td>
+        <td>${quantity}</td>
+        <td>${price}</td>
+        <td>${type}</td>
+      `;
+      transactionTable.appendChild(row);
+      transactionForm.reset();
     });
   </script>
 </body>
