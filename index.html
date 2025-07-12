@@ -183,7 +183,11 @@
   <section id="transactions" class="container">
     <h2>🧾 Transakce</h2>
 
-    <form id="transactionForm">
+    <!-- Import CSV -->
+    <input type="file" id="csvInput" accept=".csv" style="margin-bottom:1rem;">
+    <button id="importCsvBtn">Importovat CSV</button>
+
+    <form id="transactionForm" style="margin-top:1rem;">
       <input type="text" id="ticker" placeholder="Ticker (např. AAPL)" required />
       <input type="number" id="quantity" placeholder="Počet" required />
       <input type="number" step="0.01" id="price" placeholder="Cena za kus" required />
@@ -195,17 +199,20 @@
       <button type="submit">Přidat transakci</button>
     </form>
 
+    <div id="portfolio-summary" style="margin-top:1rem; font-weight:bold;"></div>
+
     <table id="transactionTable">
       <thead>
         <tr>
           <th>Ticker</th>
           <th>Počet</th>
-          <th>Cena nákupu</th>
+          <th>Cena</th>
           <th>Typ</th>
           <th>Datum</th>
           <th>Aktuální cena</th>
           <th>Zisk/Ztráta</th>
           <th>%</th>
+          <th>Akce</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -213,6 +220,9 @@
   </section>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Papa Parse pro CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <script>
     function showSection(id) {
       document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
@@ -319,43 +329,96 @@
       }
     });
 
+    // --- Transakce s importem CSV ---
+
     const transactionForm = document.getElementById("transactionForm");
     const transactionTable = document.querySelector("#transactionTable tbody");
+    const summaryDiv = document.getElementById("portfolio-summary");
     let transactions = JSON.parse(localStorage.getItem("transactions") || "[]");
 
+    // Cache aktuálních cen
+    let priceCache = {};
+
     async function fetchCurrentPrice(ticker) {
+      if (priceCache[ticker]) return priceCache[ticker];
       try {
         const response = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`);
         const data = await response.json();
-        return data.quoteResponse.result[0]?.regularMarketPrice || 0;
+        const price = data.quoteResponse.result[0]?.regularMarketPrice || 0;
+        priceCache[ticker] = price;
+        return price;
       } catch (e) {
         return 0;
       }
     }
 
-    function renderTransactions() {
+    async function renderTransactions() {
       transactionTable.innerHTML = "";
-      transactions.forEach(async (tx, index) => {
-        const currentPrice = await fetchCurrentPrice(tx.ticker);
-        const diff = currentPrice - tx.price;
-        const diffPercent = ((diff / tx.price) * 100).toFixed(2);
-        const profit = (diff * tx.quantity).toFixed(2);
-        const color = diff >= 0 ? "#4caf50" : "#e53935";
+      priceCache = {}; // Reset cache při každém renderu
+
+      // Seznam tickerů
+      const tickers = [...new Set(transactions.map(tx => tx.ticker))];
+
+      // Načtení aktuálních cen
+      const prices = {};
+      for (const ticker of tickers) {
+        prices[ticker] = await fetchCurrentPrice(ticker);
+      }
+
+      // Výpočty portfolia
+      let totalInvested = 0;
+      let totalCurrent = 0;
+      let totalProfit = 0;
+
+      transactions.forEach((tx, idx) => {
+        const currentPrice = prices[tx.ticker] || 0;
+        let profit = 0;
+        let profitPercent = 0;
+        let color = "#ccc";
+        if (tx.type === "buy") {
+          profit = (currentPrice - tx.price) * tx.quantity;
+          profitPercent = ((currentPrice - tx.price) / tx.price) * 100;
+          totalInvested += tx.price * tx.quantity;
+          totalCurrent += currentPrice * tx.quantity;
+          totalProfit += profit;
+        } else if (tx.type === "sell") {
+          profit = (tx.price - currentPrice) * tx.quantity;
+          profitPercent = ((tx.price - currentPrice) / currentPrice) * 100;
+          totalInvested -= tx.price * tx.quantity;
+          totalCurrent -= currentPrice * tx.quantity;
+          totalProfit -= profit;
+        }
+        color = profit >= 0 ? "#4caf50" : "#e53935";
 
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${tx.ticker}</td>
           <td>${tx.quantity}</td>
           <td>${tx.price}</td>
-          <td>${tx.type}</td>
+          <td>${tx.type === "buy" ? "Nákup" : "Prodej"}</td>
           <td>${tx.date}</td>
-          <td>${currentPrice.toFixed(2)}</td>
-          <td style="color:${color}">${profit}</td>
-          <td style="color:${color}">${diffPercent}%</td>
+          <td>${currentPrice ? currentPrice.toFixed(2) : "-"}</td>
+          <td style="color:${color}">${profit.toFixed(2)}</td>
+          <td style="color:${color}">${profitPercent.toFixed(2)}%</td>
+          <td><button onclick="deleteTransaction(${idx})" style="color:#e53935;">Smazat</button></td>
         `;
         transactionTable.appendChild(row);
       });
+
+      summaryDiv.innerHTML = `
+        Celkově investováno: <span style="color:#00ccff">${totalInvested.toFixed(2)}</span> USD &nbsp; | &nbsp;
+        Aktuální hodnota: <span style="color:#00ccff">${totalCurrent.toFixed(2)}</span> USD &nbsp; | &nbsp;
+        Zisk/Ztráta: <span style="color:${totalProfit >= 0 ? "#4caf50" : "#e53935"}">${totalProfit.toFixed(2)} USD</span>
+      `;
     }
+
+    window.deleteTransaction = function(index) {
+      if (confirm("Opravdu smazat tuto transakci?")) {
+        transactions.splice(index, 1);
+        localStorage.setItem("transactions", JSON.stringify(transactions));
+        renderTransactions();
+      }
+    };
 
     transactionForm.addEventListener("submit", e => {
       e.preventDefault();
@@ -372,8 +435,41 @@
       transactionForm.reset();
     });
 
+    // --- Import CSV ---
+
+    document.getElementById("importCsvBtn").addEventListener("click", function() {
+      const fileInput = document.getElementById("csvInput");
+      if (!fileInput.files.length) {
+        alert("Vyberte CSV soubor.");
+        return;
+      }
+      Papa.parse(fileInput.files[0], {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          let imported = 0;
+          results.data.forEach(row => {
+            if (row.ticker && row.quantity && row.price && row.date && row.type) {
+              transactions.push({
+                ticker: row.ticker.toUpperCase(),
+                quantity: parseFloat(row.quantity),
+                price: parseFloat(row.price),
+                date: row.date,
+                type: row.type.toLowerCase()
+              });
+              imported++;
+            }
+          });
+          localStorage.setItem("transactions", JSON.stringify(transactions));
+          renderTransactions();
+          alert(`Importováno ${imported} transakcí.`);
+          // Vyčistit input
+          fileInput.value = "";
+        }
+      });
+    });
+
     renderTransactions();
   </script>
 </body>
 </html>
-
