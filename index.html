@@ -4,17 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Moje investiční portfolio</title>
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #121212;
-      color: #f0f0f0;
+      background-color: #0d1117;
+      color: #ddd;
     }
     header {
-      background-color: #1f1f1f;
+      background-color: #161b22;
       color: white;
       padding: 1rem;
       text-align: center;
@@ -28,29 +27,21 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
-      color: white;
     }
     th, td {
-      border: 1px solid #333;
+      border: 1px solid #30363d;
       padding: 0.5rem;
       text-align: left;
     }
     th {
-      background-color: #222;
+      background-color: #21262d;
     }
-    .btn-group button {
-      background-color: #333;
-      color: white;
-      border: 1px solid #444;
-      padding: 5px 10px;
-      cursor: pointer;
-      margin-right: 5px;
-    }
-    .btn-group button.active {
-      background-color: #555;
-    }
-    #chart {
-      margin-top: 2rem;
+    select, input[type="text"] {
+      background-color: #161b22;
+      color: #ddd;
+      border: 1px solid #30363d;
+      padding: 0.3rem;
+      margin: 0.5rem 0;
     }
   </style>
 </head>
@@ -60,6 +51,14 @@
   </header>
 
   <div class="container">
+    <label for="currency">Měna:</label>
+    <select id="currency">
+      <option value="USD">USD</option>
+      <option value="CZK">CZK</option>
+    </select>
+
+    <input type="text" id="search" placeholder="Hledat akcie..." style="float:right;"/>
+
     <table id="portfolio">
       <thead>
         <tr>
@@ -69,239 +68,164 @@
           <th>Počet</th>
           <th>Cena (USD)</th>
           <th>Hodnota</th>
+          <th>Div. výnos</th>
+          <th>Dividenda ročně</th>
         </tr>
       </thead>
       <tbody>
-        <tr onclick="showChart('AAPL')">
+        <tr>
           <td><img src="https://logo.clearbit.com/apple.com" alt="Apple" width="32" /></td>
           <td>Apple</td>
           <td>AAPL</td>
-          <td>10</td>
-          <td>146</td>
-          <td>1460</td>
+          <td>5</td>
+          <td>180</td>
+          <td class="value" data-usd="900">900</td>
+          <td>0.5%</td>
+          <td>4.5</td>
+        </tr>
+        <tr>
+          <td><img src="https://logo.clearbit.com/microsoft.com" alt="Microsoft" width="32" /></td>
+          <td>Microsoft</td>
+          <td>MSFT</td>
+          <td>3</td>
+          <td>350</td>
+          <td class="value" data-usd="1050">1050</td>
+          <td>0.8%</td>
+          <td>8.4</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="container">
+    <h2>📅 Dividendový kalendář</h2>
+    <label for="monthSelect">Zobrazit měsíc:</label>
+    <select id="monthSelect">
+      <option value="all">Vše</option>
+      <option value="2025-07">Červenec 2025</option>
+      <option value="2025-08">Srpen 2025</option>
+    </select>
+
+    <table id="dividendTable">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Název</th>
+          <th>Ex-div date</th>
+          <th>Payment date</th>
+          <th>Částka (USD)</th>
+          <th>Frekvence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-month="2025-07">
+          <td>BTI</td>
+          <td>British American Tobacco</td>
+          <td>2025-07-10</td>
+          <td>2025-08-04</td>
+          <td>0.73</td>
+          <td>Kvartálně</td>
+        </tr>
+        <tr data-month="2025-08">
+          <td>O</td>
+          <td>Realty Income</td>
+          <td>2025-08-15</td>
+          <td>2025-09-01</td>
+          <td>0.25</td>
+          <td>Měsíčně</td>
         </tr>
       </tbody>
     </table>
 
-    <div class="btn-group" id="rangeButtons">
-      <button onclick="updateChart('1D')">1D</button>
-      <button onclick="updateChart('5D')">5D</button>
-      <button onclick="updateChart('1M')">1M</button>
-      <button onclick="updateChart('3M')">3M</button>
-      <button onclick="updateChart('6M')">6M</button>
-      <button onclick="updateChart('1Y')">1Y</button>
-      <button onclick="updateChart('5Y')">5Y</button>
-      <button onclick="updateChart('MAX')">MAX</button>
-    </div>
-
-    <div id="chart"></div>
+    <canvas id="dividendChart" style="margin-top:2rem;"></canvas>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    let chart;
-    const purchaseDate = new Date("2024-01-10");
-    const purchasePrice = 146;
+    const currencySelect = document.getElementById("currency");
+    const values = document.querySelectorAll(".value");
+    const exchangeRate = 23.5;
 
-    function generateMockData(range) {
-      const now = new Date();
-      const data = [];
-      let points;
+    currencySelect.addEventListener("change", () => {
+      const currency = currencySelect.value;
+      values.forEach(cell => {
+        const usd = parseFloat(cell.dataset.usd);
+        if (currency === "CZK") {
+          cell.textContent = (usd * exchangeRate).toFixed(2);
+        } else {
+          cell.textContent = usd.toFixed(2);
+        }
+      });
+    });
 
-      switch(range) {
-        case '1D': points = 24; break;
-        case '5D': points = 5; break;
-        case '1M': points = 30; break;
-        case '3M': points = 90; break;
-        case '6M': points = 180; break;
-        case '1Y': points = 365; break;
-        case '5Y': points = 1825; break;
-        case 'MAX': points = 3650; break;
-      }
+    const searchInput = document.getElementById("search");
+    searchInput.addEventListener("input", () => {
+      const filter = searchInput.value.toLowerCase();
+      const rows = document.querySelectorAll("#portfolio tbody tr");
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      });
+    });
 
-      for (let i = points - 1; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        data.push({ x: date.getTime(), y: (purchasePrice * (0.85 + Math.random() * 0.3)).toFixed(2) });
-      }
-      return data;
-    }
+    const monthSelect = document.getElementById("monthSelect");
+    monthSelect.addEventListener("change", () => {
+      const selected = monthSelect.value;
+      document.querySelectorAll("#dividendTable tbody tr").forEach(row => {
+        row.style.display = (selected === "all" || row.dataset.month === selected) ? "" : "none";
+      });
+    });
 
-    function showChart(ticker) {
-      document.getElementById("rangeButtons").style.display = "block";
-      const seriesData = generateMockData('1M');
-      const line = [
-        { x: seriesData[0].x, y: purchasePrice },
-        { x: seriesData[seriesData.length - 1].x, y: purchasePrice }
-      ];
+    const dividendData = [
+      { month: "2025-05", amount: 6.25 },
+      { month: "2025-06", amount: 12.50 },
+      { month: "2025-07", amount: 18.75 },
+      { month: "2025-08", amount: 22.00 },
+      { month: "2025-09", amount: 25.40 },
+    ];
 
-      const options = {
-        chart: {
-          type: 'line',
-          height: 400,
-          foreColor: '#ccc',
-          background: '#1e1e1e'
-        },
-        series: [
-          {
-            name: ticker,
-            data: seriesData
-          },
-          {
-            name: "Nákup",
-            data: line,
-            color: 'red',
-            stroke: {
-              dashArray: 5
+    const ctx = document.getElementById("dividendChart").getContext("2d");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: dividendData.map(d => d.month),
+        datasets: [{
+          label: "Vyplacené dividendy (USD)",
+          data: dividendData.map(d => d.amount),
+          backgroundColor: "rgba(0, 153, 255, 0.8)",
+          borderColor: "rgba(0, 153, 255, 1)",
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#222",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            callbacks: {
+              label: ctx => `$${ctx.raw.toFixed(2)}`
             }
           }
-        ],
-        xaxis: {
-          type: 'datetime'
         },
-        stroke: {
-          width: [2, 2],
-          dashArray: [0, 5]
-        },
-        tooltip: {
+        scales: {
           x: {
-            format: 'dd MMM yyyy'
+            ticks: { color: "#ddd" },
+            grid: { color: "rgba(255,255,255,0.1)" }
+          },
+          y: {
+            ticks: { color: "#ddd" },
+            grid: { color: "rgba(255,255,255,0.1)" },
+            beginAtZero: true
           }
-        }
-      };
-
-      if (chart) {
-        chart.updateOptions(options);
-      } else {
-        chart = new ApexCharts(document.querySelector("#chart"), options);
-        chart.render();
-      }
-    }
-
-    function updateChart(range) {
-      const buttons = document.querySelectorAll(".btn-group button");
-      buttons.forEach(btn => btn.classList.remove("active"));
-      event.target.classList.add("active");
-
-      const seriesData = generateMockData(range);
-      const line = [
-        { x: seriesData[0].x, y: purchasePrice },
-        { x: seriesData[seriesData.length - 1].x, y: purchasePrice }
-      ];
-
-      chart.updateSeries([
-        {
-          name: "AAPL",
-          data: seriesData
         },
-        {
-          name: "Nákup",
-          data: line,
-          color: 'red'
+        layout: {
+          padding: 10
         }
-      ]);
-    }
+      }
+    });
   </script>
-<script>
-  const dividendData = [
-    { month: "2025-05", amount: 6.25 },
-    { month: "2025-06", amount: 12.50 },
-    { month: "2025-07", amount: 18.75 },
-    { month: "2025-08", amount: 22.00 },
-    { month: "2025-09", amount: 25.40 },
-  ];
-
-  const ctx = document.getElementById("dividendChart").getContext("2d");
-  new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: dividendData.map(d => d.month),
-      datasets: [{
-        label: "Vyplacené dividendy (USD)",
-        data: dividendData.map(d => d.amount),
-        backgroundColor: "rgba(0, 153, 255, 0.8)",
-        borderColor: "rgba(0, 153, 255, 1)",
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: "#222",
-          titleColor: "#fff",
-          bodyColor: "#fff",
-          callbacks: {
-            label: ctx => `$${ctx.raw.toFixed(2)}`
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: "#ddd" },
-          grid: { color: "rgba(255,255,255,0.1)" }
-        },
-        y: {
-          ticks: { color: "#ddd" },
-          grid: { color: "rgba(255,255,255,0.1)" },
-          beginAtZero: true
-        }
-      },
-      layout: {
-        padding: 10
-      }
-    }
-  });
-</script>
-  <script>
-  const dividendData = [
-    { month: "2025-05", amount: 6.25 },
-    { month: "2025-06", amount: 12.50 },
-    { month: "2025-07", amount: 18.75 },
-    { month: "2025-08", amount: 22.00 },
-    { month: "2025-09", amount: 25.40 },
-  ];
-
-  const ctx = document.getElementById("dividendChart").getContext("2d");
-  new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: dividendData.map(d => d.month),
-      datasets: [{
-        label: "Vyplacené dividendy (USD)",
-        data: dividendData.map(d => d.amount),
-        backgroundColor: "rgba(0, 153, 255, 0.8)",
-        borderColor: "rgba(0, 153, 255, 1)",
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: "#222",
-          titleColor: "#fff",
-          bodyColor: "#fff",
-          callbacks: {
-            label: ctx => `$${ctx.raw.toFixed(2)}`
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: "#ddd" },
-          grid: { color: "rgba(255,255,255,0.1)" }
-        },
-        y: {
-          ticks: { color: "#ddd" },
-          grid: { color: "rgba(255,255,255,0.1)" },
-          beginAtZero: true
-        }
-      },
-      layout: {
-        padding: 10
-      }
-    }
-  });
-</script>
+</body>
+</html>
