@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="cs">
 <head>
   <meta charset="UTF-8" />
@@ -13,26 +14,29 @@
       color: #ddd;
     }
     header {
-      background-color: #161b22;
-      color: white;
+      background: linear-gradient(to right, #0d1117, #1a1f2c);
       padding: 1rem;
       text-align: center;
     }
+    header h1 {
+      margin: 0;
+    }
     nav {
-      background: linear-gradient(to right, #1f2937, #111827);
-      padding: 1rem;
       display: flex;
       justify-content: center;
-      gap: 2rem;
+      gap: 1rem;
+      background-color: #161b22;
+      padding: 0.5rem;
     }
     nav a {
-      color: #ccc;
+      color: #ddd;
       text-decoration: none;
       font-weight: 600;
-      transition: color 0.3s ease;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
     }
     nav a:hover {
-      color: #1e90ff;
+      background-color: #30363d;
     }
     .container {
       padding: 1rem;
@@ -59,6 +63,8 @@
       padding: 0.3rem;
       margin: 0.5rem 0;
     }
+    section { display: none; }
+    section.active { display: block; }
   </style>
 </head>
 <body>
@@ -67,14 +73,16 @@
   </header>
 
   <nav>
-    <a href="#dashboard">Dashboard</a>
-    <a href="#calendar">Dividendový kalendář</a>
-    <a href="#dividendy">Dividendy</a>
-    <a href="#diversifikace">Diversifikace</a>
-    <a href="#transakce">Transakce</a>
+    <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+    <a href="#" onclick="showSection('calendar')">Dividendový kalendář</a>
+    <a href="#" onclick="showSection('performance')">Výkonnost</a>
+    <a href="#" onclick="showSection('dividends')">Dividendy</a>
+    <a href="#" onclick="showSection('diversification')">Diversifikace</a>
+    <a href="#" onclick="showSection('transactions')">Transakce</a>
   </nav>
 
-  <div id="dashboard" class="container">
+  <section id="dashboard" class="container active">
+    <!-- Původní dashboard sekce -->
     <label for="currency">Měna:</label>
     <select id="currency">
       <option value="USD">USD</option>
@@ -119,9 +127,9 @@
         </tr>
       </tbody>
     </table>
-  </div>
+  </section>
 
-  <div id="calendar" class="container">
+  <section id="calendar" class="container">
     <h2>📅 Dividendový kalendář</h2>
     <label for="monthSelect">Zobrazit měsíc:</label>
     <select id="monthSelect">
@@ -162,10 +170,20 @@
     </table>
 
     <canvas id="dividendChart" style="margin-top:2rem;"></canvas>
-  </div>
+  </section>
+
+  <section id="performance" class="container">
+    <h2>📊 Srovnání s indexem S&P 500</h2>
+    <canvas id="performanceChart"></canvas>
+  </section>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    function showSection(id) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
     const currencySelect = document.getElementById("currency");
     const values = document.querySelectorAll(".value");
     const exchangeRate = 23.5;
@@ -200,22 +218,14 @@
       });
     });
 
-    const dividendData = [
-      { month: "2025-05", amount: 6.25 },
-      { month: "2025-06", amount: 12.50 },
-      { month: "2025-07", amount: 18.75 },
-      { month: "2025-08", amount: 22.00 },
-      { month: "2025-09", amount: 25.40 },
-    ];
-
-    const ctx = document.getElementById("dividendChart").getContext("2d");
-    new Chart(ctx, {
+    const ctxDiv = document.getElementById("dividendChart").getContext("2d");
+    new Chart(ctxDiv, {
       type: "bar",
       data: {
-        labels: dividendData.map(d => d.month),
+        labels: ["2025-05", "2025-06", "2025-07", "2025-08", "2025-09"],
         datasets: [{
           label: "Vyplacené dividendy (USD)",
-          data: dividendData.map(d => d.amount),
+          data: [6.25, 12.5, 18.75, 22.0, 25.4],
           backgroundColor: "rgba(0, 153, 255, 0.8)",
           borderColor: "rgba(0, 153, 255, 1)",
           borderWidth: 1
@@ -223,33 +233,61 @@
       },
       options: {
         responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: "#ddd" }, grid: { color: "rgba(255,255,255,0.1)" } },
+          y: { ticks: { color: "#ddd" }, grid: { color: "rgba(255,255,255,0.1)" }, beginAtZero: true }
+        }
+      }
+    });
+
+    const ctxPerf = document.getElementById("performanceChart").getContext("2d");
+    new Chart(ctxPerf, {
+      type: "line",
+      data: {
+        labels: ["2025-03", "2025-04", "2025-05", "2025-06", "2025-07"],
+        datasets: [
+          {
+            label: "Moje portfolio",
+            data: [0, 2.3, 4.8, 7.1, 9.4],
+            borderColor: "#00ccff",
+            backgroundColor: "transparent",
+            tension: 0.4
+          },
+          {
+            label: "S&P 500",
+            data: [0, 1.1, 2.7, 3.5, 4.9],
+            borderColor: "#999",
+            backgroundColor: "transparent",
+            borderDash: [5, 5],
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
         plugins: {
-          legend: { display: false },
+          legend: { labels: { color: "#ccc" } },
           tooltip: {
             backgroundColor: "#222",
             titleColor: "#fff",
-            bodyColor: "#fff",
-            callbacks: {
-              label: ctx => `$${ctx.raw.toFixed(2)}`
-            }
+            bodyColor: "#fff"
           }
         },
         scales: {
           x: {
             ticks: { color: "#ddd" },
-            grid: { color: "rgba(255,255,255,0.1)" }
+            grid: { color: "rgba(255,255,255,0.05)" }
           },
           y: {
             ticks: { color: "#ddd" },
-            grid: { color: "rgba(255,255,255,0.1)" },
+            grid: { color: "rgba(255,255,255,0.05)" },
             beginAtZero: true
           }
-        },
-        layout: {
-          padding: 10
         }
       }
     });
   </script>
 </body>
 </html>
+
