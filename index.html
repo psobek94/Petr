@@ -468,58 +468,146 @@
         }
       });
     });
+renderTransactions();
+    updateCoverage(); // výpočet pokrytí po načtení
 
-    renderTransactions();
   </script>
+
   <section id="income" class="container">
-  <h2>💸 Pasivní příjem</h2>
+    <h2>🪙 Pasivní příjem</h2>
 
-  <label for="expenseGoal">Měsíční výdajový cíl (<span id="currencyLabel">USD</span>):</label>
-  <input type="number" id="expenseGoal" value="1000" min="0" />
+    <label for="expenseGoal">Měsíční výdajový cíl (<span id="currencyLabel">USD</span>):</label>
+    <input type="number" id="expenseGoal" value="1000" min="0" />
 
-  <div style="margin-top: 1rem;">
-    <strong>Pokrytí výdajů:</strong>
-    <div id="coverageText">Načítání...</div>
-    <div style="background:#30363d;border-radius:5px;overflow:hidden;margin-top:5px;">
-      <div id="coverageBar" style="background:#00cc66;height:20px;width:0%;text-align:center;color:#fff;font-size:0.9rem;"></div>
+    <div style="margin-top: 1rem;">
+      <strong>Pokrytí výdajů:</strong>
+      <div id="coverageText">Načítání...</div>
+      <div style="background:#20263d;border-radius:5px;overflow:hidden;margin-top:5px;">
+        <div id="coverageBar" style="background:#00cc66;height:20px;width:0%;text-align:center;color:#fff;font-size:0.9rem;transition: width 0.5s ease;">
+        </div>
+      </div>
     </div>
-  </div>
 
-  <h3 style="margin-top:2rem;">💼 Zdroj příjmu</h3>
-  <table id="incomeTable">
-    <thead>
-      <tr>
-        <th>Název</th>
-        <th>Měsíční částka</th>
-        <th>Roční částka</th>
-        <th>Akce</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Dividendy</td>
-        <td class="income-month" data-usd="120">120</td>
-        <td class="income-year" data-usd="1440">1440</td>
+    <h3 style="margin-top:2rem;">📈 Zdroj příjmu</h3>
+    <table id="incomeTable">
+      <thead>
+        <tr>
+          <th>Název</th>
+          <th>Měsíční částka</th>
+          <th>Roční částka</th>
+          <th>Akce</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dividendy</td>
+          <td class="income-month" data-usd="120">120</td>
+          <td class="income-year" data-usd="1440">1440</td>
+          <td><button onclick="removeIncome(this)">🗑</button></td>
+        </tr>
+        <tr>
+          <td>Nájem</td>
+          <td class="income-month" data-usd="400">400</td>
+          <td class="income-year" data-usd="4800">4800</td>
+          <td><button onclick="removeIncome(this)">🗑</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:1rem;">
+      <input type="text" id="incomeName" placeholder="Název příjmu">
+      <input type="number" id="incomeMonthly" placeholder="Měsíční částka">
+      <button onclick="addIncome()">➕ Přidat</button>
+    </div>
+
+    <h3 style="margin-top:2rem;">📊 Graf vývoje pasivního příjmu</h3>
+    <canvas id="incomeChart" height="100"></canvas>
+  </section>
+
+  <script>
+    function updateCoverage() {
+      const goal = parseFloat(document.getElementById("expenseGoal").value);
+      const rows = document.querySelectorAll("#incomeTable tbody tr");
+      let total = 0;
+      rows.forEach(row => {
+        const cell = row.querySelector(".income-month");
+        if (cell) {
+          total += parseFloat(cell.dataset.usd);
+        }
+      });
+      const percent = goal > 0 ? Math.min((total / goal) * 100, 100).toFixed(1) : 0;
+      const coverageBar = document.getElementById("coverageBar");
+      const coverageText = document.getElementById("coverageText");
+      coverageBar.style.width = `${percent}%`;
+      coverageBar.textContent = `${percent}%`;
+      coverageText.textContent = `Z pokrytí ${total.toFixed(2)} / ${goal.toFixed(2)} USD`;
+    }
+
+    function addIncome() {
+      const name = document.getElementById("incomeName").value;
+      const monthly = parseFloat(document.getElementById("incomeMonthly").value);
+      if (!name || isNaN(monthly)) return;
+
+      const tbody = document.querySelector("#incomeTable tbody");
+      const tr = document.createElement("tr");
+
+      const yearly = monthly * 12;
+
+      tr.innerHTML = `
+        <td>${name}</td>
+        <td class="income-month" data-usd="${monthly}">${monthly}</td>
+        <td class="income-year" data-usd="${yearly}">${yearly}</td>
         <td><button onclick="removeIncome(this)">🗑</button></td>
-      </tr>
-      <tr>
-        <td>Nájem</td>
-        <td class="income-month" data-usd="400">400</td>
-        <td class="income-year" data-usd="4800">4800</td>
-        <td><button onclick="removeIncome(this)">🗑</button></td>
-      </tr>
-    </tbody>
-  </table>
+      `;
+      tbody.appendChild(tr);
 
-  <div style="margin-top:1rem;">
-    <input type="text" id="incomeName" placeholder="Název příjmu">
-    <input type="number" id="incomeMonthly" placeholder="Měsíční částka">
-    <button onclick="addIncome()">➕ Přidat</button>
-  </div>
+      document.getElementById("incomeName").value = "";
+      document.getElementById("incomeMonthly").value = "";
 
-  <h3 style="margin-top:2rem;">📊 Graf vývoje pasivního příjmu</h3>
-  <canvas id="incomeChart" height="100"></canvas>
-</section>
+      updateCoverage();
+    }
+
+    function removeIncome(btn) {
+      btn.closest("tr").remove();
+      updateCoverage();
+    }
+
+    const incomeChart = new Chart(document.getElementById("incomeChart").getContext("2d"), {
+      type: "line",
+      data: {
+        labels: ["2025-03", "2025-04", "2025-05", "2025-06", "2025-07"],
+        datasets: [{
+          label: "Pasivní příjem (USD)",
+          data: [420, 530, 620, 660, 740],
+          borderColor: "#00cc66",
+          backgroundColor: "transparent",
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: "#ccc" } },
+          tooltip: {
+            backgroundColor: "#222",
+            titleColor: "#fff",
+            bodyColor: "#fff"
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: "#ddd" },
+            grid: { color: "rgba(255,255,255,0.05)" }
+          },
+          y: {
+            ticks: { color: "#ddd" },
+            grid: { color: "rgba(255,255,255,0.05)" },
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+
 </body>
 </html>
-updateCoverage(); 
