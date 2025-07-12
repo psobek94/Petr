@@ -1,94 +1,63 @@
-<!DOCTYPE html>
 <html lang="cs">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Moje investiční portfolio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-color: #0d1117;
-      --card-bg: #161b22;
-      --accent: #4f46e5;
-      --text-light: #ddd;
-      --border: #30363d;
-    }
-    * {
-      box-sizing: border-box;
-    }
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(145deg, #0d1117, #1e2330);
-      color: var(--text-light);
+      background-color: #0d1117;
+      color: #ddd;
     }
     header {
-      background: linear-gradient(90deg, #2c2f5a, #1f1b3a);
+      background-color: #161b22;
       color: white;
       padding: 1rem;
       text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
     }
     nav {
+      background: linear-gradient(to right, #1f2937, #111827);
+      padding: 1rem;
       display: flex;
       justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    nav a {
+      color: #ccc;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    nav a:hover {
+      color: #1e90ff;
+    }
+    .container {
       padding: 1rem;
-      background: #161b22;
-      position: sticky;
-      top: 3.5rem;
-      z-index: 999;
-    }
-    nav button {
-      background: #1f2633;
-      color: #fff;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    nav button:hover {
-      background: var(--accent);
-    }
-    .section {
-      display: none;
-      padding: 2rem 1rem;
       max-width: 1200px;
       margin: 0 auto;
-    }
-    .active {
-      display: block;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
-      border-radius: 8px;
-      overflow: hidden;
     }
     th, td {
-      border: 1px solid var(--border);
-      padding: 0.6rem;
+      border: 1px solid #30363d;
+      padding: 0.5rem;
       text-align: left;
     }
     th {
       background-color: #21262d;
     }
-    select, input[type="text"], input[type="number"] {
+    select, input[type="text"] {
       background-color: #161b22;
-      color: var(--text-light);
-      border: 1px solid var(--border);
-      padding: 0.4rem;
-      border-radius: 6px;
+      color: #ddd;
+      border: 1px solid #30363d;
+      padding: 0.3rem;
       margin: 0.5rem 0;
-    }
-    canvas {
-      margin-top: 2rem;
     }
   </style>
 </head>
@@ -96,20 +65,22 @@
   <header>
     <h1>Moje investiční portfolio</h1>
   </header>
+
   <nav>
-    <button onclick="showSection('dashboard')">Dashboard</button>
-    <button onclick="showSection('calendar')">Dividendový kalendář</button>
-    <button onclick="showSection('dividends')">Dividendy</button>
-    <button onclick="showSection('diversification')">Diversifikace</button>
-    <button onclick="showSection('transactions')">Transakce</button>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#calendar">Dividendový kalendář</a>
+    <a href="#dividendy">Dividendy</a>
+    <a href="#diversifikace">Diversifikace</a>
+    <a href="#transakce">Transakce</a>
   </nav>
 
-  <div id="dashboard" class="section active">
+  <div id="dashboard" class="container">
     <label for="currency">Měna:</label>
     <select id="currency">
       <option value="USD">USD</option>
       <option value="CZK">CZK</option>
     </select>
+
     <input type="text" id="search" placeholder="Hledat akcie..." style="float:right;"/>
 
     <table id="portfolio">
@@ -127,7 +98,7 @@
       </thead>
       <tbody>
         <tr>
-          <td><img src="https://logo.clearbit.com/apple.com" width="32" /></td>
+          <td><img src="https://logo.clearbit.com/apple.com" alt="Apple" width="32" /></td>
           <td>Apple</td>
           <td>AAPL</td>
           <td>5</td>
@@ -136,25 +107,37 @@
           <td>0.5%</td>
           <td>4.5</td>
         </tr>
+        <tr>
+          <td><img src="https://logo.clearbit.com/microsoft.com" alt="Microsoft" width="32" /></td>
+          <td>Microsoft</td>
+          <td>MSFT</td>
+          <td>3</td>
+          <td>350</td>
+          <td class="value" data-usd="1050">1050</td>
+          <td>0.8%</td>
+          <td>8.4</td>
+        </tr>
       </tbody>
     </table>
   </div>
 
-  <div id="calendar" class="section">
+  <div id="calendar" class="container">
     <h2>📅 Dividendový kalendář</h2>
     <label for="monthSelect">Zobrazit měsíc:</label>
     <select id="monthSelect">
       <option value="all">Vše</option>
       <option value="2025-07">Červenec 2025</option>
+      <option value="2025-08">Srpen 2025</option>
     </select>
-    <table>
+
+    <table id="dividendTable">
       <thead>
         <tr>
           <th>Ticker</th>
           <th>Název</th>
           <th>Ex-div date</th>
           <th>Payment date</th>
-          <th>Částka</th>
+          <th>Částka (USD)</th>
           <th>Frekvence</th>
         </tr>
       </thead>
@@ -167,102 +150,105 @@
           <td>0.73</td>
           <td>Kvartálně</td>
         </tr>
+        <tr data-month="2025-08">
+          <td>O</td>
+          <td>Realty Income</td>
+          <td>2025-08-15</td>
+          <td>2025-09-01</td>
+          <td>0.25</td>
+          <td>Měsíčně</td>
+        </tr>
       </tbody>
     </table>
-  </div>
 
-  <div id="dividends" class="section">
-    <h2>📈 Vyplacené dividendy</h2>
-    <canvas id="dividendChart"></canvas>
-  </div>
-
-  <div id="diversification" class="section">
-    <h2>🌍 Diversifikace</h2>
-    <p>Sem přidáme koláčové grafy sektorů a geografického rozdělení.</p>
-  </div>
-
-  <div id="transactions" class="section">
-    <h2>📋 Transakce</h2>
-    <form id="transactionForm">
-      <input type="text" placeholder="Ticker" required />
-      <input type="number" placeholder="Počet" required />
-      <input type="number" placeholder="Cena (USD)" required />
-      <button type="submit">Přidat transakci</button>
-    </form>
-    <table id="transactionTable">
-      <thead>
-        <tr>
-          <th>Ticker</th>
-          <th>Počet</th>
-          <th>Cena (USD)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <canvas id="dividendChart" style="margin-top:2rem;"></canvas>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    const sections = document.querySelectorAll(".section");
-    function showSection(id) {
-      sections.forEach(s => s.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-    }
-
     const currencySelect = document.getElementById("currency");
     const values = document.querySelectorAll(".value");
     const exchangeRate = 23.5;
+
     currencySelect.addEventListener("change", () => {
       const currency = currencySelect.value;
       values.forEach(cell => {
         const usd = parseFloat(cell.dataset.usd);
-        cell.textContent = currency === "CZK" ? (usd * exchangeRate).toFixed(2) : usd.toFixed(2);
+        if (currency === "CZK") {
+          cell.textContent = (usd * exchangeRate).toFixed(2);
+        } else {
+          cell.textContent = usd.toFixed(2);
+        }
       });
     });
 
     const searchInput = document.getElementById("search");
     searchInput.addEventListener("input", () => {
       const filter = searchInput.value.toLowerCase();
-      document.querySelectorAll("#portfolio tbody tr").forEach(row => {
-        row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
+      const rows = document.querySelectorAll("#portfolio tbody tr");
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
       });
     });
 
-    document.getElementById("monthSelect").addEventListener("change", e => {
-      const selected = e.target.value;
-      document.querySelectorAll("#calendar tbody tr").forEach(row => {
+    const monthSelect = document.getElementById("monthSelect");
+    monthSelect.addEventListener("change", () => {
+      const selected = monthSelect.value;
+      document.querySelectorAll("#dividendTable tbody tr").forEach(row => {
         row.style.display = (selected === "all" || row.dataset.month === selected) ? "" : "none";
       });
     });
 
-    new Chart(document.getElementById("dividendChart"), {
+    const dividendData = [
+      { month: "2025-05", amount: 6.25 },
+      { month: "2025-06", amount: 12.50 },
+      { month: "2025-07", amount: 18.75 },
+      { month: "2025-08", amount: 22.00 },
+      { month: "2025-09", amount: 25.40 },
+    ];
+
+    const ctx = document.getElementById("dividendChart").getContext("2d");
+    new Chart(ctx, {
       type: "bar",
       data: {
-        labels: ["Květen", "Červen", "Červenec"],
+        labels: dividendData.map(d => d.month),
         datasets: [{
-          label: "Dividendy (USD)",
-          data: [10, 15, 20],
-          backgroundColor: "#4f46e5"
+          label: "Vyplacené dividendy (USD)",
+          data: dividendData.map(d => d.amount),
+          backgroundColor: "rgba(0, 153, 255, 0.8)",
+          borderColor: "rgba(0, 153, 255, 1)",
+          borderWidth: 1
         }]
       },
       options: {
+        responsive: true,
         plugins: {
-          legend: { display: false }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#222",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            callbacks: {
+              label: ctx => `$${ctx.raw.toFixed(2)}`
+            }
+          }
         },
         scales: {
-          x: { ticks: { color: "#ccc" }, grid: { color: "rgba(255,255,255,0.1)" } },
-          y: { ticks: { color: "#ccc" }, grid: { color: "rgba(255,255,255,0.1)" }, beginAtZero: true }
+          x: {
+            ticks: { color: "#ddd" },
+            grid: { color: "rgba(255,255,255,0.1)" }
+          },
+          y: {
+            ticks: { color: "#ddd" },
+            grid: { color: "rgba(255,255,255,0.1)" },
+            beginAtZero: true
+          }
+        },
+        layout: {
+          padding: 10
         }
       }
-    });
-
-    document.getElementById("transactionForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const [ticker, count, price] = [...e.target.elements].map(el => el.value);
-      const row = document.createElement("tr");
-      row.innerHTML = `<td>${ticker}</td><td>${count}</td><td>${price}</td>`;
-      document.querySelector("#transactionTable tbody").appendChild(row);
-      e.target.reset();
     });
   </script>
 </body>
