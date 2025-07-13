@@ -27,6 +27,7 @@
       gap: 1rem;
       background-color: #161b22;
       padding: 0.5rem;
+      flex-wrap: wrap;
     }
     nav a {
       color: #ddd;
@@ -56,18 +57,17 @@
     th {
       background-color: #21262d;
     }
-    select, input[type="text"], input[type="number"], input[type="date"], select, button {
+    select, input[type="text"], input[type="number"], input[type="date"] {
       background-color: #161b22;
       color: #ddd;
       border: 1px solid #30363d;
       padding: 0.3rem;
-      margin: 0.3rem;
-    }
-    button {
-      cursor: pointer;
+      margin: 0.5rem 0;
     }
     section { display: none; }
     section.active { display: block; }
+    .gain { color: #00ff99; }
+    .loss { color: #ff6666; }
   </style>
 </head>
 <body>
@@ -82,532 +82,205 @@
     <a href="#" onclick="showSection('dividends')">Dividendy</a>
     <a href="#" onclick="showSection('diversification')">Diversifikace</a>
     <a href="#" onclick="showSection('transactions')">Transakce</a>
+    <a href="#" onclick="showSection('watchlist')">Watchlist</a>
+    <a href="#" onclick="showSection('goals')">Cíl</a>
+    <a href="#" onclick="showSection('passive')">Pasivní příjem</a>
   </nav>
-
   <section id="dashboard" class="container active">
-    <!-- Původní dashboard sekce -->
-    <label for="currency">Měna:</label>
-    <select id="currency">
-      <option value="USD">USD</option>
-      <option value="CZK">CZK</option>
-    </select>
-
-    <input type="text" id="search" placeholder="Hledat akcie..." style="float:right;"/>
-
-    <table id="portfolio">
-      <thead>
-        <tr>
-          <th>Logo</th>
-          <th>Název</th>
-          <th>Ticker</th>
-          <th>Počet</th>
-          <th>Cena (USD)</th>
-          <th>Hodnota</th>
-          <th>Div. výnos</th>
-          <th>Dividenda ročně</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><img src="https://logo.clearbit.com/apple.com" alt="Apple" width="32" /></td>
-          <td>Apple</td>
-          <td>AAPL</td>
-          <td>5</td>
-          <td>180</td>
-          <td class="value" data-usd="900">900</td>
-          <td>0.5%</td>
-          <td>4.5</td>
-        </tr>
-        <tr>
-          <td><img src="https://logo.clearbit.com/microsoft.com" alt="Microsoft" width="32" /></td>
-          <td>Microsoft</td>
-          <td>MSFT</td>
-          <td>3</td>
-          <td>350</td>
-          <td class="value" data-usd="1050">1050</td>
-          <td>0.8%</td>
-          <td>8.4</td>
-        </tr>
-      </tbody>
-    </table>
+    <h2>📈 Přehled portfolia</h2>
+    <!-- Tvoje tabulka portfolia bude zde -->
+    <p>Sem můžeš doplnit tabulku se svými akciemi a dalšími informacemi.</p>
   </section>
 
   <section id="calendar" class="container">
     <h2>📅 Dividendový kalendář</h2>
-    <label for="monthSelect">Zobrazit měsíc:</label>
-    <select id="monthSelect">
-      <option value="all">Vše</option>
-      <option value="2025-07">Červenec 2025</option>
-      <option value="2025-08">Srpen 2025</option>
-    </select>
-
-    <table id="dividendTable">
-      <thead>
-        <tr>
-          <th>Ticker</th>
-          <th>Název</th>
-          <th>Ex-div date</th>
-          <th>Payment date</th>
-          <th>Částka (USD)</th>
-          <th>Frekvence</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr data-month="2025-07">
-          <td>BTI</td>
-          <td>British American Tobacco</td>
-          <td>2025-07-10</td>
-          <td>2025-08-04</td>
-          <td>0.73</td>
-          <td>Kvartálně</td>
-        </tr>
-        <tr data-month="2025-08">
-          <td>O</td>
-          <td>Realty Income</td>
-          <td>2025-08-15</td>
-          <td>2025-09-01</td>
-          <td>0.25</td>
-          <td>Měsíčně</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <canvas id="dividendChart" style="margin-top:2rem;"></canvas>
+    <p>Zde bude zobrazen kalendář s blížícími se dividendami.</p>
   </section>
 
   <section id="performance" class="container">
-    <h2>📊 Srovnání s indexem S&P 500</h2>
-    <canvas id="performanceChart"></canvas>
+    <h2>📊 Výkonnost vs S&P 500</h2>
+    <canvas id="performanceChart" height="200"></canvas>
+  </section>
+
+  <section id="dividends" class="container">
+    <h2>💵 Historie dividend</h2>
+    <p>Tabulka nebo graf zobrazující přijaté dividendy v čase.</p>
+  </section>
+
+  <section id="diversification" class="container">
+    <h2>🌐 Diverzifikace portfolia</h2>
+    <p>Grafické znázornění sektorového a geografického rozložení.</p>
   </section>
 
   <section id="transactions" class="container">
     <h2>🧾 Transakce</h2>
-
-    <!-- Import CSV -->
-    <input type="file" id="csvInput" accept=".csv" style="margin-bottom:1rem;">
-    <button id="importCsvBtn">Importovat CSV</button>
-
-    <form id="transactionForm" style="margin-top:1rem;">
+    <form id="transactionForm">
       <input type="text" id="ticker" placeholder="Ticker (např. AAPL)" required />
-      <input type="number" id="quantity" placeholder="Počet" required />
-      <input type="number" step="0.01" id="price" placeholder="Cena za kus" required />
+      <input type="number" id="shares" placeholder="Počet akcií" required />
+      <input type="number" id="price" placeholder="Cena za kus (USD)" required />
       <input type="date" id="date" required />
-      <select id="type" required>
-        <option value="buy">Nákup</option>
-        <option value="sell">Prodej</option>
-      </select>
       <button type="submit">Přidat transakci</button>
     </form>
-
-    <div id="portfolio-summary" style="margin-top:1rem; font-weight:bold;"></div>
-
     <table id="transactionTable">
       <thead>
         <tr>
           <th>Ticker</th>
           <th>Počet</th>
           <th>Cena</th>
-          <th>Typ</th>
           <th>Datum</th>
-          <th>Aktuální cena</th>
-          <th>Zisk/Ztráta</th>
-          <th>%</th>
-          <th>Akce</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Papa Parse pro CSV -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
-  <script>
-    function showSection(id) {
-      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-
-    const currencySelect = document.getElementById("currency");
-    const values = document.querySelectorAll(".value");
-    const exchangeRate = 23.5;
-
-    currencySelect.addEventListener("change", () => {
-      const currency = currencySelect.value;
-      values.forEach(cell => {
-        const usd = parseFloat(cell.dataset.usd);
-        cell.textContent = currency === "CZK" ? (usd * exchangeRate).toFixed(2) : usd.toFixed(2);
-      });
-    });
-
-    const searchInput = document.getElementById("search");
-    searchInput.addEventListener("input", () => {
-      const filter = searchInput.value.toLowerCase();
-      const rows = document.querySelectorAll("#portfolio tbody tr");
-      rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(filter) ? "" : "none";
-      });
-    });
-
-    const monthSelect = document.getElementById("monthSelect");
-    monthSelect.addEventListener("change", () => {
-      const selected = monthSelect.value;
-      document.querySelectorAll("#dividendTable tbody tr").forEach(row => {
-        row.style.display = (selected === "all" || row.dataset.month === selected) ? "" : "none";
-      });
-    });
-
-    const ctxDiv = document.getElementById("dividendChart").getContext("2d");
-    new Chart(ctxDiv, {
-      type: "bar",
-      data: {
-        labels: ["2025-05", "2025-06", "2025-07", "2025-08", "2025-09"],
-        datasets: [{
-          label: "Vyplacené dividendy (USD)",
-          data: [6.25, 12.5, 18.75, 22.0, 25.4],
-          backgroundColor: "rgba(0, 153, 255, 0.8)",
-          borderColor: "rgba(0, 153, 255, 1)",
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: "#ddd" }, grid: { color: "rgba(255,255,255,0.1)" } },
-          y: { ticks: { color: "#ddd" }, grid: { color: "rgba(255,255,255,0.1)" }, beginAtZero: true }
-        }
-      }
-    });
-
-    const ctxPerf = document.getElementById("performanceChart").getContext("2d");
-    new Chart(ctxPerf, {
-      type: "line",
-      data: {
-        labels: ["2025-03", "2025-04", "2025-05", "2025-06", "2025-07"],
-        datasets: [
-          {
-            label: "Moje portfolio",
-            data: [0, 2.3, 4.8, 7.1, 9.4],
-            borderColor: "#00ccff",
-            backgroundColor: "transparent",
-            tension: 0.4
-          },
-          {
-            label: "S&P 500",
-            data: [0, 1.1, 2.7, 3.5, 4.9],
-            borderColor: "#999",
-            backgroundColor: "transparent",
-            borderDash: [5, 5],
-            tension: 0.4
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: "#ccc" } },
-          tooltip: {
-            backgroundColor: "#222",
-            titleColor: "#fff",
-            bodyColor: "#fff"
-          }
-        },
-        scales: {
-          x: {
-            ticks: { color: "#ddd" },
-            grid: { color: "rgba(255,255,255,0.05)" }
-          },
-          y: {
-            ticks: { color: "#ddd" },
-            grid: { color: "rgba(255,255,255,0.05)" },
-            beginAtZero: true
-          }
-        }
-      }
-    });
-
-    // --- Transakce s importem CSV ---
-
-    const transactionForm = document.getElementById("transactionForm");
-    const transactionTable = document.querySelector("#transactionTable tbody");
-    const summaryDiv = document.getElementById("portfolio-summary");
-    let transactions = JSON.parse(localStorage.getItem("transactions") || "[]");
-
-    // Cache aktuálních cen
-    let priceCache = {};
-
-    async function fetchCurrentPrice(ticker) {
-      if (priceCache[ticker]) return priceCache[ticker];
-      try {
-        const response = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`);
-        const data = await response.json();
-        const price = data.quoteResponse.result[0]?.regularMarketPrice || 0;
-        priceCache[ticker] = price;
-        return price;
-      } catch (e) {
-        return 0;
-      }
-    }
-
-    async function renderTransactions() {
-      transactionTable.innerHTML = "";
-      priceCache = {}; // Reset cache při každém renderu
-
-      // Seznam tickerů
-      const tickers = [...new Set(transactions.map(tx => tx.ticker))];
-
-      // Načtení aktuálních cen
-      const prices = {};
-      for (const ticker of tickers) {
-        prices[ticker] = await fetchCurrentPrice(ticker);
-      }
-
-      // Výpočty portfolia
-      let totalInvested = 0;
-      let totalCurrent = 0;
-      let totalProfit = 0;
-
-      transactions.forEach((tx, idx) => {
-        const currentPrice = prices[tx.ticker] || 0;
-        let profit = 0;
-        let profitPercent = 0;
-        let color = "#ccc";
-        if (tx.type === "buy") {
-          profit = (currentPrice - tx.price) * tx.quantity;
-          profitPercent = ((currentPrice - tx.price) / tx.price) * 100;
-          totalInvested += tx.price * tx.quantity;
-          totalCurrent += currentPrice * tx.quantity;
-          totalProfit += profit;
-        } else if (tx.type === "sell") {
-          profit = (tx.price - currentPrice) * tx.quantity;
-          profitPercent = ((tx.price - currentPrice) / currentPrice) * 100;
-          totalInvested -= tx.price * tx.quantity;
-          totalCurrent -= currentPrice * tx.quantity;
-          totalProfit -= profit;
-        }
-        color = profit >= 0 ? "#4caf50" : "#e53935";
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${tx.ticker}</td>
-          <td>${tx.quantity}</td>
-          <td>${tx.price}</td>
-          <td>${tx.type === "buy" ? "Nákup" : "Prodej"}</td>
-          <td>${tx.date}</td>
-          <td>${currentPrice ? currentPrice.toFixed(2) : "-"}</td>
-          <td style="color:${color}">${profit.toFixed(2)}</td>
-          <td style="color:${color}">${profitPercent.toFixed(2)}%</td>
-          <td><button onclick="deleteTransaction(${idx})" style="color:#e53935;">Smazat</button></td>
-        `;
-        transactionTable.appendChild(row);
-      });
-
-      summaryDiv.innerHTML = `
-        Celkově investováno: <span style="color:#00ccff">${totalInvested.toFixed(2)}</span> USD &nbsp; | &nbsp;
-        Aktuální hodnota: <span style="color:#00ccff">${totalCurrent.toFixed(2)}</span> USD &nbsp; | &nbsp;
-        Zisk/Ztráta: <span style="color:${totalProfit >= 0 ? "#4caf50" : "#e53935"}">${totalProfit.toFixed(2)} USD</span>
-      `;
-    }
-
-    window.deleteTransaction = function(index) {
-      if (confirm("Opravdu smazat tuto transakci?")) {
-        transactions.splice(index, 1);
-        localStorage.setItem("transactions", JSON.stringify(transactions));
-        renderTransactions();
-      }
-    };
-
-    transactionForm.addEventListener("submit", e => {
-      e.preventDefault();
-      const newTx = {
-        ticker: document.getElementById("ticker").value.toUpperCase(),
-        quantity: parseFloat(document.getElementById("quantity").value),
-        price: parseFloat(document.getElementById("price").value),
-        date: document.getElementById("date").value,
-        type: document.getElementById("type").value
-      };
-      transactions.push(newTx);
-      localStorage.setItem("transactions", JSON.stringify(transactions));
-      renderTransactions();
-      transactionForm.reset();
-    });
-
-    // --- Import CSV ---
-
-    document.getElementById("importCsvBtn").addEventListener("click", function() {
-      const fileInput = document.getElementById("csvInput");
-      if (!fileInput.files.length) {
-        alert("Vyberte CSV soubor.");
-        return;
-      }
-      Papa.parse(fileInput.files[0], {
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-          let imported = 0;
-          results.data.forEach(row => {
-            if (row.ticker && row.quantity && row.price && row.date && row.type) {
-              transactions.push({
-                ticker: row.ticker.toUpperCase(),
-                quantity: parseFloat(row.quantity),
-                price: parseFloat(row.price),
-                date: row.date,
-                type: row.type.toLowerCase()
-              });
-              imported++;
-            }
-          });
-          localStorage.setItem("transactions", JSON.stringify(transactions));
-          renderTransactions();
-          alert(`Importováno ${imported} transakcí.`);
-          // Vyčistit input
-          fileInput.value = "";
-        }
-      });
-    });
-renderTransactions();
-    updateCoverage(); // výpočet pokrytí po načtení
-
-  </script>
-
-  <section id="income" class="container">
-    <h2>🪙 Pasivní příjem</h2>
-
-    <label for="expenseGoal">Měsíční výdajový cíl (<span id="currencyLabel">USD</span>):</label>
-    <input type="number" id="expenseGoal" value="1000" min="0" />
-
-    <div style="margin-top: 1rem;">
-      <strong>Pokrytí výdajů:</strong>
-      <div id="coverageText">Načítání...</div>
-      <div style="background:#20263d;border-radius:5px;overflow:hidden;margin-top:5px;">
-        <div id="coverageBar" style="background:#00cc66;height:20px;width:0%;text-align:center;color:#fff;font-size:0.9rem;transition: width 0.5s ease;">
-        </div>
-      </div>
-    </div>
-
-    <h3 style="margin-top:2rem;">📈 Zdroj příjmu</h3>
-    <table id="incomeTable">
-      <thead>
-        <tr>
-          <th>Název</th>
-          <th>Měsíční částka</th>
-          <th>Roční částka</th>
+          <th>Změna</th>
           <th>Akce</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Dividendy</td>
-          <td class="income-month" data-usd="120">120</td>
-          <td class="income-year" data-usd="1440">1440</td>
-          <td><button onclick="removeIncome(this)">🗑</button></td>
-        </tr>
-        <tr>
-          <td>Nájem</td>
-          <td class="income-month" data-usd="400">400</td>
-          <td class="income-year" data-usd="4800">4800</td>
-          <td><button onclick="removeIncome(this)">🗑</button></td>
-        </tr>
+        <!-- Dynamické transakce -->
       </tbody>
     </table>
-
-    <div style="margin-top:1rem;">
-      <input type="text" id="incomeName" placeholder="Název příjmu">
-      <input type="number" id="incomeMonthly" placeholder="Měsíční částka">
-      <button onclick="addIncome()">➕ Přidat</button>
-    </div>
-
-    <h3 style="margin-top:2rem;">📊 Graf vývoje pasivního příjmu</h3>
-    <canvas id="incomeChart" height="100"></canvas>
   </section>
 
-  <script>
-    function updateCoverage() {
-      const goal = parseFloat(document.getElementById("expenseGoal").value);
-      const rows = document.querySelectorAll("#incomeTable tbody tr");
-      let total = 0;
-      rows.forEach(row => {
-        const cell = row.querySelector(".income-month");
-        if (cell) {
-          total += parseFloat(cell.dataset.usd);
+  <section id="watchlist" class="container">
+    <h2>🔔 Watchlist</h2>
+    <form id="watchForm">
+      <input type="text" id="watchTicker" placeholder="Ticker" required />
+      <input type="number" id="targetPrice" placeholder="Cílová cena (USD)" required />
+      <button type="submit">Přidat do Watchlistu</button>
+    </form>
+    <table id="watchTable">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Aktuální cena</th>
+          <th>Cílová cena</th>
+          <th>Rozdíl</th>
+          <th>Akce</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dynamický obsah watchlistu -->
+      </tbody>
+    </table>
+  </section>
+
+  <section id="goals" class="container">
+    <h2>🎯 Cíle</h2>
+    <form id="goalForm">
+      <input type="number" id="goalAmount" placeholder="Cíl (CZK)" required />
+      <input type="number" id="currentInvested" placeholder="Zainvestováno (CZK)" required />
+      <button type="submit">Aktualizovat</button>
+    </form>
+    <div id="goalProgress"></div>
+  </section>
+
+  <section id="passive" class="container">
+    <h2>📈 Pasivní příjem</h2>
+    <canvas id="passiveChart" height="200"></canvas>
+  </section>
+<script>
+  // Přepínání sekcí
+  function showSection(id) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // TRANSAKCE
+  document.getElementById('transactionForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const ticker = document.getElementById('ticker').value.toUpperCase();
+    const shares = parseFloat(document.getElementById('shares').value);
+    const price = parseFloat(document.getElementById('price').value);
+    const date = document.getElementById('date').value;
+
+    const table = document.getElementById('transactionTable').querySelector('tbody');
+    const row = document.createElement('tr');
+
+    const unrealized = (Math.random() * 20 - 10).toFixed(2);
+    const color = unrealized >= 0 ? 'lightgreen' : 'salmon';
+
+    row.innerHTML = `
+      <td>${ticker}</td>
+      <td>${shares}</td>
+      <td>${price}</td>
+      <td>${date}</td>
+      <td style="color:${color}">${unrealized}%</td>
+      <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+    `;
+    table.appendChild(row);
+    e.target.reset();
+  });
+
+  // WATCHLIST
+  document.getElementById('watchForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const ticker = document.getElementById('watchTicker').value.toUpperCase();
+    const target = parseFloat(document.getElementById('targetPrice').value);
+    const current = +(target + (Math.random() * 40 - 20)).toFixed(2);
+    const diff = +(current - target).toFixed(2);
+    const color = diff > 0 ? 'salmon' : 'lightgreen';
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${ticker}</td>
+      <td>${current}</td>
+      <td>${target}</td>
+      <td style="color:${color}">${diff > 0 ? '+' : ''}${diff} USD</td>
+      <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+    `;
+    document.querySelector('#watchTable tbody').appendChild(row);
+    e.target.reset();
+  });
+
+  // CÍLE
+  document.getElementById('goalForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const goal = parseFloat(document.getElementById('goalAmount').value);
+    const invested = parseFloat(document.getElementById('currentInvested').value);
+    const percent = Math.min(((invested / goal) * 100).toFixed(2), 100);
+
+    document.getElementById('goalProgress').innerHTML = `
+      <p>Zainvestováno: ${invested.toLocaleString()} CZK z cíle ${goal.toLocaleString()} CZK</p>
+      <div style="background:#333;border-radius:5px;">
+        <div style="width:${percent}%;background:#00ccff;padding:0.5rem;border-radius:5px;color:#000;">
+          ${percent} %
+        </div>
+      </div>
+    `;
+  });
+
+  // PASIVNÍ PŘÍJEM - ukázková data
+  const ctxPassive = document.getElementById("passiveChart").getContext("2d");
+  new Chart(ctxPassive, {
+    type: "bar",
+    data: {
+      labels: ["2025-03", "2025-04", "2025-05", "2025-06", "2025-07"],
+      datasets: [{
+        label: "Pasivní příjem (CZK)",
+        data: [3100, 4200, 5200, 6400, 7200],
+        backgroundColor: "rgba(0, 204, 255, 0.6)"
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: "#ddd" } },
+        tooltip: {
+          backgroundColor: "#222",
+          titleColor: "#fff",
+          bodyColor: "#fff"
         }
-      });
-      const percent = goal > 0 ? Math.min((total / goal) * 100, 100).toFixed(1) : 0;
-      const coverageBar = document.getElementById("coverageBar");
-      const coverageText = document.getElementById("coverageText");
-      coverageBar.style.width = `${percent}%`;
-      coverageBar.textContent = `${percent}%`;
-      coverageText.textContent = `Z pokrytí ${total.toFixed(2)} / ${goal.toFixed(2)} USD`;
-    }
-
-    function addIncome() {
-      const name = document.getElementById("incomeName").value;
-      const monthly = parseFloat(document.getElementById("incomeMonthly").value);
-      if (!name || isNaN(monthly)) return;
-
-      const tbody = document.querySelector("#incomeTable tbody");
-      const tr = document.createElement("tr");
-
-      const yearly = monthly * 12;
-
-      tr.innerHTML = `
-        <td>${name}</td>
-        <td class="income-month" data-usd="${monthly}">${monthly}</td>
-        <td class="income-year" data-usd="${yearly}">${yearly}</td>
-        <td><button onclick="removeIncome(this)">🗑</button></td>
-      `;
-      tbody.appendChild(tr);
-
-      document.getElementById("incomeName").value = "";
-      document.getElementById("incomeMonthly").value = "";
-
-      updateCoverage();
-    }
-
-    function removeIncome(btn) {
-      btn.closest("tr").remove();
-      updateCoverage();
-    }
-
-    const incomeChart = new Chart(document.getElementById("incomeChart").getContext("2d"), {
-      type: "line",
-      data: {
-        labels: ["2025-03", "2025-04", "2025-05", "2025-06", "2025-07"],
-        datasets: [{
-          label: "Pasivní příjem (USD)",
-          data: [420, 530, 620, 660, 740],
-          borderColor: "#00cc66",
-          backgroundColor: "transparent",
-          tension: 0.4
-        }]
       },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: "#ccc" } },
-          tooltip: {
-            backgroundColor: "#222",
-            titleColor: "#fff",
-            bodyColor: "#fff"
-          }
+      scales: {
+        x: {
+          ticks: { color: "#ccc" },
+          grid: { color: "rgba(255,255,255,0.05)" }
         },
-        scales: {
-          x: {
-            ticks: { color: "#ddd" },
-            grid: { color: "rgba(255,255,255,0.05)" }
-          },
-          y: {
-            ticks: { color: "#ddd" },
-            grid: { color: "rgba(255,255,255,0.05)" },
-            beginAtZero: true
-          }
+        y: {
+          ticks: { color: "#ccc" },
+          grid: { color: "rgba(255,255,255,0.05)" },
+          beginAtZero: true
         }
       }
-    });
-  </script>
-
+    }
+  });
+</script>
 </body>
 </html>
