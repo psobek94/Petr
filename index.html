@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Moje investiční portfolio</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -28,15 +27,13 @@
       gap: 1rem;
       background-color: #161b22;
       padding: 0.5rem;
-      flex-wrap: wrap;
     }
     nav a {
       color: #ddd;
       text-decoration: none;
       font-weight: 600;
-      padding: 0.4rem 0.8rem;
+      padding: 0.3rem 0.6rem;
       border-radius: 5px;
-      transition: background-color 0.3s;
     }
     nav a:hover {
       background-color: #30363d;
@@ -45,12 +42,6 @@
       padding: 1rem;
       max-width: 1200px;
       margin: 0 auto;
-    }
-    section {
-      display: none;
-    }
-    section.active {
-      display: block;
     }
     table {
       width: 100%;
@@ -65,35 +56,15 @@
     th {
       background-color: #21262d;
     }
-    select, input[type="text"], input[type="number"], input[type="date"] {
+    input[type="file"] {
+      margin-top: 1rem;
+      padding: 0.5rem;
       background-color: #161b22;
       color: #ddd;
       border: 1px solid #30363d;
-      padding: 0.4rem;
-      margin: 0.5rem 0;
-      border-radius: 4px;
     }
-    input[type="submit"], button {
-      background-color: #238636;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      margin-top: 0.5rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    input[type="submit"]:hover, button:hover {
-      background-color: #2ea043;
-    }
-    .gain {
-      color: #2ecc71;
-      font-weight: bold;
-    }
-    .loss {
-      color: #e74c3c;
-      font-weight: bold;
-    }
+    section { display: none; }
+    section.active { display: block; }
   </style>
 </head>
 <body>
@@ -103,305 +74,198 @@
 
   <nav>
     <a href="#" onclick="showSection('dashboard')">Dashboard</a>
-    <a href="#" onclick="showSection('calendar')">Dividendový kalendář</a>
-    <a href="#" onclick="showSection('performance')">Výkonnost</a>
-    <a href="#" onclick="showSection('dividends')">Dividendy</a>
-    <a href="#" onclick="showSection('diversification')">Diversifikace</a>
-    <a href="#" onclick="showSection('transactions')">Transakce</a>
-    <a href="#" onclick="showSection('watchlist')">Watchlist</a>
-    <a href="#" onclick="showSection('goal')">Cíl</a>
-    <a href="#" onclick="showSection('income')">Pasivní příjem</a>
-    <a href="#" onclick="showSection('property')">Nemovitosti / Dluhy</a>
+    <a href="#" onclick="showSection('import')">Import CSV</a>
   </nav>
 
   <section id="dashboard" class="container active">
-    <h2>📊 Dashboard</h2>
-    <label for="currency">Měna:</label>
-    <select id="currency">
-      <option value="USD">USD</option>
-      <option value="CZK">CZK</option>
-    </select>
-
-    <input type="text" id="search" placeholder="Hledat akcie..." style="float:right;" />
-    <div style="clear:both;"></div>
-
-    <table id="portfolioTable">
-      <thead>
-        <tr>
-          <th>Logo</th>
-          <th>Název</th>
-          <th>Ticker</th>
-          <th>Počet</th>
-          <th>Nákupní cena</th>
-          <th>Aktuální cena</th>
-          <th>Hodnota</th>
-          <th>Změna</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Dynamicky plněno -->
-      </tbody>
-    </table>
-  </section>
-   </section>
-
-  <section id="calendar" class="container">
-    <h2>📅 Dividendový kalendář</h2>
-    <table id="dividendCalendarTable">
-      <thead>
-        <tr>
-          <th>Ticker</th>
-          <th>Datum výplaty</th>
-          <th>Výše dividendy</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Data se načtou automaticky -->
-      </tbody>
-    </table>
-    <canvas id="dividendChart" style="margin-top:2rem;"></canvas>
-  </section>
-
-  <section id="performance" class="container">
-    <h2>📈 Výkonnost portfolia vs S&P 500</h2>
-    <canvas id="performanceChart" style="max-height: 300px;"></canvas>
-    <h3 style="margin-top:2rem;">📊 Měsíční výkonnost</h3>
-    <canvas id="monthlyPerformanceChart"></canvas>
-  </section>
-
-  <section id="dividends" class="container">
-    <h2>💰 Přehled dividend</h2>
-    <canvas id="totalDividendChart" style="margin-top:1rem;"></canvas>
-  </section>
-
-  <section id="diversification" class="container">
-    <h2>🧬 Diversifikace portfolia</h2>
-    <canvas id="sectorChart" style="max-height:300px;"></canvas>
-    <canvas id="regionChart" style="max-height:300px; margin-top:2rem;"></canvas>
-  </section>
-
-  <section id="transactions" class="container">
-    <h2>🧾 Transakce</h2>
-    <form id="transactionForm">
-      <label>Ticker:</label>
-      <input type="text" id="ticker" required />
-      <label>Počet akcií:</label>
-      <input type="number" id="quantity" required />
-      <label>Cena za kus (USD):</label>
-      <input type="number" step="0.01" id="price" required />
-      <label>Datum nákupu:</label>
-      <input type="date" id="date" required />
-      <input type="submit" value="Přidat transakci" />
-    </form>
-
-    <h3>📂 Import transakcí (CSV)</h3>
-    <input type="file" id="csvUpload" accept=".csv" />
-    
-<section id="import-csv" class="container">
-  <h2>📥 Import transakcí z CSV</h2>
-  <input type="file" id="csvFile" accept=".csv" />
-  <button onclick="importCSV()">📂 Načíst CSV</button>
-  <p style="margin-top:1rem; font-size: 0.9rem; color: #888;">
-    CSV formát: <code>Ticker,Datum,Počet,Nákupní cena</code><br>
-    Příklad: <code>BTI,2023-08-24,319,32.599</code>
-  </p>
-  
-</section>
+    <h2>📊 Transakce</h2>
     <table id="transactionTable">
       <thead>
         <tr>
           <th>Ticker</th>
-          <th>Počet</th>
-          <th>Cena</th>
-          <th>Datum</th>
-          <th>Zisk / Ztráta</th>
+          <th>Datum nákupu</th>
+          <th>Počet akcií</th>
+          <th>Nákupní cena (USD)</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- Transakce -->
-      </tbody>
+      <tbody></tbody>
     </table>
   </section>
 
-  <section id="watchlist" class="container">
-    <h2>📋 Watchlist</h2>
-    <form id="watchlistForm">
-      <label>Ticker:</label>
-      <input type="text" id="watchTicker" required />
-      <label>Cílová cena (USD):</label>
-      <input type="number" step="0.01" id="targetPrice" required />
-      <input type="submit" value="Přidat do Watchlistu" />
-    </form>
+  <section id="import" class="container">
+    <h2>📥 Import transakcí ze souboru CSV</h2>
+    <input type="file" id="csvFile" accept=".csv" />
+  </section>
 
-    <table id="watchlistTable">
+  <script>
+    function showSection(id) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    document.getElementById('csvFile').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const lines = e.target.result.split('\n');
+        const table = document.querySelector('#transactionTable tbody');
+        table.innerHTML = '';
+        lines.forEach(line => {
+          const [ticker, date, shares, price] = line.split(',');
+          if (ticker && date && shares && price) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${ticker}</td>
+              <td>${date}</td>
+              <td>${shares}</td>
+              <td>${parseFloat(price).toFixed(2)}</td>
+            `;
+            table.appendChild(row);
+          }
+        });
+      };
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moje investiční portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #0d1117;
+      color: #ddd;
+    }
+    header {
+      background: linear-gradient(to right, #0d1117, #1a1f2c);
+      padding: 1rem;
+      text-align: center;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background-color: #161b22;
+      padding: 0.5rem;
+    }
+    nav a {
+      color: #ddd;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+    }
+    nav a:hover {
+      background-color: #30363d;
+    }
+    .container {
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    section { display: none; }
+    section.active { display: block; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #30363d;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background-color: #21262d;
+    }
+    input[type="file"], input[type="text"] {
+      background-color: #161b22;
+      color: #ddd;
+      border: 1px solid #30363d;
+      padding: 0.3rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Moje investiční portfolio</h1>
+  </header>
+
+  <nav>
+    <a href="#" onclick="showSection('dashboard')">Transakce</a>
+    <a href="#" onclick="showSection('import')">Import CSV</a>
+  </nav>
+
+  <section id="dashboard" class="container active">
+    <h2>📋 Seznam transakcí</h2>
+    <table id="transactionTable">
       <thead>
         <tr>
           <th>Ticker</th>
-          <th>Aktuální cena</th>
-          <th>Cílová cena</th>
-          <th>Rozdíl</th>
-          <th>Akce</th>
+          <th>Datum nákupu</th>
+          <th>Počet akcií</th>
+          <th>Nákupní cena (USD)</th>
         </tr>
       </thead>
       <tbody>
-        <!-- Watchlist -->
-      </tbody>
-    </table>
-  </section>
-  <section id="goal" class="container">
-    <h2>🎯 Cíl investora</h2>
-    <label>Investiční cíl (CZK):</label>
-    <input type="number" id="goalAmount" placeholder="Např. 10000000" />
-    <p>Aktuálně zainvestováno: <span id="investedAmount">0</span> CZK</p>
-    <progress id="goalProgress" value="0" max="100"></progress>
-    <p>Splněno: <span id="goalPercent">0%</span></p>
-  </section>
-
-  <section id="realestate" class="container">
-    <h2>🏠 Nemovitosti a dluhy</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Název</th>
-          <th>Typ</th>
-          <th>Zaplaceno</th>
-          <th>Zbývá splatit</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Garsonka</td>
-          <td>Hypotéka</td>
-          <td>480 000 CZK</td>
-          <td>1 020 000 CZK</td>
-        </tr>
-        <tr>
-          <td>Byt 2+kk</td>
-          <td>Hypotéka</td>
-          <td>750 000 CZK</td>
-          <td>2 250 000 CZK</td>
-        </tr>
+        <!-- Data z CSV -->
       </tbody>
     </table>
   </section>
 
-  <section id="passive" class="container">
-    <h2>📈 Pasivní příjem</h2>
-    <p>Měsíční příjem z dividend a pronájmu:</p>
-    <ul>
-      <li>Dividendy: 2 150 CZK</li>
-      <li>Pronájem: 10 000 CZK</li>
-    </ul>
-    <p><strong>Celkem: <span id="totalPassive">12 150 CZK</span></strong></p>
-
-    <canvas id="passiveIncomeChart" style="margin-top:2rem;"></canvas>
+  <section id="import" class="container">
+    <h2>📂 Import transakcí ze souboru CSV</h2>
+    <input type="file" id="csvFile" accept=".csv">
+    <button onclick="importCSV()">Načíst</button>
   </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Přepínání sekcí
     function showSection(id) {
-      document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
     }
 
-    // Výpočet cíle
-    const goalInput = document.getElementById("goalAmount");
-    const investedSpan = document.getElementById("investedAmount");
-    const progress = document.getElementById("goalProgress");
-    const percentSpan = document.getElementById("goalPercent");
-
-    goalInput.addEventListener("input", () => {
-      const goal = parseInt(goalInput.value);
-      const invested = 1000000; // načti z dat
-      investedSpan.textContent = invested.toLocaleString() + " CZK";
-      const percent = Math.min(100, (invested / goal) * 100);
-      progress.value = percent;
-      percentSpan.textContent = percent.toFixed(1) + "%";
-    });
-
-    // Watchlist logika
-    const watchlistForm = document.getElementById("watchlistForm");
-    const watchlistTable = document.getElementById("watchlistTable").querySelector("tbody");
-
-    watchlistForm.addEventListener("submit", async e => {
-      e.preventDefault();
-      const ticker = document.getElementById("watchTicker").value.toUpperCase();
-      const target = parseFloat(document.getElementById("targetPrice").value);
-
-      const response = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`);
-      const data = await response.json();
-      const price = data.quoteResponse.result[0]?.regularMarketPrice || 0;
-      const diff = (price - target).toFixed(2);
-      const row = document.createElement("tr");
-
-      row.innerHTML = `
-        <td>${ticker}</td>
-        <td>${price}</td>
-        <td>${target}</td>
-        <td style="color:${diff >= 0 ? 'red' : 'green'}">${diff}</td>
-        <td><button onclick="this.parentElement.parentElement.remove()">❌</button></td>
-      `;
-      watchlistTable.appendChild(row);
-      watchlistForm.reset();
-    });
-
-    // Pasivní příjem graf
-    new Chart(document.getElementById("passiveIncomeChart").getContext("2d"), {
-      type: 'line',
-      data: {
-        labels: ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07"],
-        datasets: [{
-          label: "Pasivní příjem (CZK)",
-          data: [7500, 7800, 8200, 8800, 10500, 11700, 12150],
-          borderColor: "#00cc88",
-          backgroundColor: "rgba(0,204,136,0.2)",
-          fill: true,
-          tension: 0.3
-        }]
-      },
-      options: {
-        scales: {
-          x: { ticks: { color: "#ddd" }, grid: { color: "#222" } },
-          y: { ticks: { color: "#ddd" }, beginAtZero: true }
-        },
-        plugins: {
-          legend: { labels: { color: "#ccc" } }
-        }
-      }
-    });
     function importCSV() {
-  const fileInput = document.getElementById('csvFile');
-  const file = fileInput.files[0];
-  if (!file) {
-    alert("Nejprve vyber soubor!");
-    return;
-  }
+      const fileInput = document.getElementById('csvFile');
+      const file = fileInput.files[0];
 
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    const lines = e.target.result.split('\n').filter(line => line.trim() !== '');
-    for (const line of lines) {
-      const [ticker, date, sharesStr, priceStr] = line.split(',').map(x => x.trim());
-      const shares = parseFloat(sharesStr);
-      const price = parseFloat(priceStr.replace(',', '.'));
+      if (!file) {
+        alert('Vyberte CSV soubor.');
+        return;
+      }
 
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${ticker}</td>
-        <td>${date}</td>
-        <td>${shares}</td>
-        <td>${price.toFixed(3)}</td>
-        <td>-</td>
-        <td><button onclick="this.parentElement.parentElement.remove()">❌</button></td>
-      `;
-      document.querySelector("#transactionTable tbody").appendChild(row);
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const lines = e.target.result.split('\n');
+        const tableBody = document.querySelector('#transactionTable tbody');
+        tableBody.innerHTML = ''; // vyčisti předchozí
+
+        for (let line of lines) {
+          if (!line.trim()) continue;
+          const [ticker, date, count, price] = line.split(',');
+          const row = `<tr>
+            <td>${ticker.trim()}</td>
+            <td>${date.trim()}</td>
+            <td>${count.trim()}</td>
+            <td>${parseFloat(price.trim()).toFixed(3)}</td>
+          </tr>`;
+          tableBody.innerHTML += row;
+        }
+      };
+      reader.readAsText(file);
     }
-    alert("Transakce byly úspěšně načteny.");
-  };
-
-  reader.readAsText(file);
-}
+    
   </script>
 </body>
 </html>
