@@ -370,6 +370,38 @@
         }
       }
     });
+    function importCSV() {
+  const fileInput = document.getElementById('csvFile');
+  const file = fileInput.files[0];
+  if (!file) {
+    alert("Nejprve vyber soubor!");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    const lines = e.target.result.split('\n').filter(line => line.trim() !== '');
+    for (const line of lines) {
+      const [ticker, date, sharesStr, priceStr] = line.split(',').map(x => x.trim());
+      const shares = parseFloat(sharesStr);
+      const price = parseFloat(priceStr.replace(',', '.'));
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${ticker}</td>
+        <td>${date}</td>
+        <td>${shares}</td>
+        <td>${price.toFixed(3)}</td>
+        <td>-</td>
+        <td><button onclick="this.parentElement.parentElement.remove()">❌</button></td>
+      `;
+      document.querySelector("#transactionTable tbody").appendChild(row);
+    }
+    alert("Transakce byly úspěšně načteny.");
+  };
+
+  reader.readAsText(file);
+}
   </script>
 </body>
 </html>
