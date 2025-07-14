@@ -196,7 +196,17 @@
 
     <h3>📂 Import transakcí (CSV)</h3>
     <input type="file" id="csvUpload" accept=".csv" />
-
+    
+<section id="import-csv" class="container">
+  <h2>📥 Import transakcí z CSV</h2>
+  <input type="file" id="csvFile" accept=".csv" />
+  <button onclick="importCSV()">📂 Načíst CSV</button>
+  <p style="margin-top:1rem; font-size: 0.9rem; color: #888;">
+    CSV formát: <code>Ticker,Datum,Počet,Nákupní cena</code><br>
+    Příklad: <code>BTI,2023-08-24,319,32.599</code>
+  </p>
+  
+</section>
     <table id="transactionTable">
       <thead>
         <tr>
