@@ -415,5 +415,25 @@
       reader.readAsText(file);
     });
   </script>
+  // Dashboard – koláčový graf alokace
+new Chart(document.getElementById("dashboardPieChart"), {
+  type: "doughnut",
+  data: {
+    labels: ["Akcie", "Nemovitosti", "Hotovost"],
+    datasets: [{
+      data: [60, 35, 5],
+      backgroundColor: ["#00ccff", "#00cc66", "#ffcc00"]
+    }]
+  },
+  options: {
+    plugins: {
+      legend: {
+        labels: {
+          color: "#ddd"
+        }
+      }
+    }
+  }
+});
 </body>
 </html>
