@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investiční portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #0d1117;
+      color: #ddd;
+    }
+    nav {
+      background-color: #161b22;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    nav a {
+      color: #ddd;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      background-color: #21262d;
+    }
+    nav a:hover {
+      background-color: #30363d;
+    }
+    section {
+      display: none;
+      padding: 2rem;
+    }
+    section.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #30363d;
+      padding: 0.5rem;
+    }
+    th {
+      background-color: #21262d;
+    }
+    input, button {
+      margin: 0.3rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: none;
+    }
+    input {
+      background-color: #161b22;
+      color: #ddd;
+      border: 1px solid #30363d;
+    }
+    button {
+      background-color: #238636;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+    <a href="#" onclick="showSection('transactions')">Transakce</a>
+    <a href="#" onclick="showSection('performance')">Výkonnost</a>
+    <a href="#" onclick="showSection('expenses')">Náklady</a>
+    <a href="#" onclick="showSection('debt')">Dluhy</a>
+  </nav>
+
+  <!-- Sekce: Dashboard -->
+  <section id="dashboard" class="active">
+    <h2>📊 Přehled portfolia</h2>
+    <input type="text" id="searchInput" placeholder="Vyhledej podle tickeru...">
+    <table id="portfolioTable">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Počet</th>
+          <th>Průměrná cena</th>
+          <th>Aktuální cena</th>
+          <th>Zisk/Ztráta</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AMD</td>
+          <td>10</td>
+          <td>86.82</td>
+          <td class="live-price" data-ticker="AMD">Načítám...</td>
+          <td class="gain-loss">-</td>
+        </tr>
+        <tr>
+          <td>GOOG</td>
+          <td>4</td>
+          <td>155.15</td>
+          <td class="live-price" data-ticker="GOOG">Načítám...</td>
+          <td class="gain-loss">-</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Sekce: Transakce -->
+  <section id="transactions">
+    <h2>📘 Transakce</h2>
+    <h3>📂 Import CSV</h3>
+    <input type="file" id="csvInput" accept=".csv" />
+
+    <h3>📝 Přidat ručně</h3>
+    <form id="manualForm">
+      <input type="text" id="tickerInput" placeholder="Ticker" required />
+      <input type="number" id="quantityInput" placeholder="Počet" required />
+      <input type="number" id="priceInput" placeholder="Cena za kus" step="0.01" required />
+      <input type="date" id="dateInput" required />
+      <button type="submit">Přidat</button>
+    </form>
+
+    <table id="transactionTable">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Počet</th>
+          <th>Cena</th>
+          <th>Datum</th>
+          <th>Celkem</th>
+          <th>🗑️</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- Sekce: Výkonnost -->
+  <section id="performance">
+    <h2>📈 Výkonnost portfolia vs S&P 500</h2>
+    <canvas id="performanceChart" style="max-width:100%; height:400px;"></canvas>
+  </section>
+
+  <!-- Sekce: Náklady -->
+  <section id="expenses">
+    <h2>💰 Náklady</h2>
+    <form id="expenseForm">
+      <input type="text" id="expenseName" placeholder="Název" required />
+      <input type="number" id="expenseAmount" placeholder="Celková částka" required />
+      <input type="number" id="expensePaid" placeholder="Uhrazeno" required />
+      <button type="submit">Přidat / Aktualizovat</button>
+    </form>
+    <table id="expenseTable">
+      <thead>
+        <tr>
+          <th>Název</th>
+          <th>Celkem</th>
+          <th>Uhrazeno</th>
+          <th>Zbývá</th>
+          <th>% Uh.</th>
+          <th>🗑️</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <canvas id="expenseChart" style="max-width:100%; height:400px;"></canvas>
+  </section>
+
+  <!-- Sekce: Dluhy -->
+  <section id="debt">
+    <h2>🏦 Dluhy</h2>
+    <form id="debtForm">
+      <input type="text" id="debtName" placeholder="Název" required />
+      <input type="number" id="debtAmount" placeholder="Celková částka" required />
+      <input type="number" id="debtPaid" placeholder="Uhrazeno" required />
+      <button type="submit">Přidat / Aktualizovat</button>
+    </form>
+    <table id="debtTable">
+      <thead>
+        <tr>
+          <th>Název</th>
+          <th>Celkem</th>
+          <th>Uhrazeno</th>
+          <th>Zbývá</th>
+          <th>% Uh.</th>
+          <th>🗑️</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <canvas id="debtChart" style="max-width:100%; height:400px;"></canvas>
+  </section>
+
+  <!-- Všechny skripty -->
+  <script>
+    function showSection(id) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // Dashboard - hledání a živé ceny
+    document.getElementById("searchInput").addEventListener("input", function () {
+      const filter = this.value.toLowerCase();
+      document.querySelectorAll("#portfolioTable tbody tr").forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
+      });
+    });
+
+    async function fetchLivePrices() {
+      const rows = document.querySelectorAll(".live-price");
+      for (const cell of rows) {
+        const ticker = cell.dataset.ticker;
+        try {
+          const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`);
+          const data = await response.json();
+          const price = data.chart.result[0].meta.regularMarketPrice;
+          cell.textContent = price.toFixed(2);
+          const row = cell.parentElement;
+          const quantity = parseFloat(row.children[1].textContent);
+          const avgPrice = parseFloat(row.children[2].textContent);
+          const gain = ((price - avgPrice) * quantity).toFixed(2);
+          const diffCell = row.querySelector(".gain-loss");
+          diffCell.textContent = gain;
+          diffCell.style.color = gain >= 0 ? "#00e676" : "#ff4d4d";
+        } catch {
+          cell.textContent = "N/A";
+        }
+      }
+    }
+
+    fetchLivePrices();
+
+    // Transakce
+    const transactionTable = document.querySelector("#transactionTable tbody");
+    document.getElementById("manualForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const t = id => document.getElementById(id).value;
+      addRow(t("tickerInput"), parseFloat(t("quantityInput")), parseFloat(t("priceInput")), t("dateInput"));
+      this.reset();
+    });
+
+    document.getElementById("csvInput").addEventListener("change", function (e) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        e.target.result.split("\n").forEach(line => {
+          const [t, q, p, d] = line.split(",");
+          if (t && q && p && d) addRow(t, parseFloat(q), parseFloat(p), d);
+        });
+      };
+      reader.readAsText(e.target.files[0]);
+    });
+
+    function addRow(ticker, quantity, price, date) {
+      const total = (quantity * price).toFixed(2);
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${ticker}</td><td>${quantity}</td><td>${price.toFixed(2)}</td><td>${date}</td><td>${total}</td><td><button onclick="this.closest('tr').remove()">🗑️</button></td>`;
+      transactionTable.appendChild(row);
+    }
+
+    // Výkonnost graf
+    new Chart(document.getElementById("performanceChart"), {
+      type: "line",
+      data: {
+        labels: ["Březen", "Duben", "Květen", "Červen", "Červenec"],
+        datasets: [
+          { label: "Moje portfolio", data: [0, 2.3, 4.8, 7.1, 9.4], borderColor: "#00ccff", tension: 0.4 },
+          { label: "S&P 500", data: [0, 1.1, 2.7, 3.5, 4.9], borderColor: "#999", borderDash: [5, 5], tension: 0.4 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: "#ddd" } } },
+        scales: {
+          x: { ticks: { color: "#ddd" }, grid: { color: "rgba(255,255,255,0.05)" } },
+          y: { beginAtZero: true, ticks: { color: "#ddd" }, grid: { color: "rgba(255,255,255,0.05)" } }
+        }
+      }
+    });
+
+    // Náklady
+    const expenseForm = document.getElementById("expenseForm");
+    const expenseTable = document.querySelector("#expenseTable tbody");
+    const ctxExpenses = document.getElementById("expenseChart").getContext("2d");
+    let expenses = [], expenseChart;
+
+    expenseForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const name = expenseName.value.trim();
+      const amount = parseFloat(expenseAmount.value);
+      const paid = parseFloat(expensePaid.value);
+      const i = expenses.findIndex(x => x.name === name);
+      if (i >= 0) expenses[i] = { name, amount, paid };
+      else expenses.push({ name, amount, paid });
+      expenseForm.reset();
+      renderExpenses();
+    });
+
+    function renderExpenses() {
+      expenseTable.innerHTML = "";
+      expenses.forEach((e, i) => {
+        const remaining = e.amount - e.paid;
+        const percent = ((e.paid / e.amount) * 100).toFixed(1);
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${e.name}</td><td>${e.amount}</td><td>${e.paid}</td><td>${remaining}</td><td>${percent} %</td><td><button onclick="deleteExpense(${i})">🗑️</button></td>`;
+        expenseTable.appendChild(row);
+      });
+      updateExpenseChart();
+    }
+
+    function deleteExpense(i) {
+      expenses.splice(i, 1);
+      renderExpenses();
+    }
+
+    function updateExpenseChart() {
+      if (expenseChart) expenseChart.destroy();
+      expenseChart = new Chart(ctxExpenses, {
+        type: 'bar',
+        data: {
+          labels: expenses.map(e => e.name),
+          datasets: [
+            { label: "Uhrazeno", data: expenses.map(e => e.paid), backgroundColor: "#00cc66" },
+            { label: "Zbývá", data: expenses.map(e => e.amount - e.paid), backgroundColor: "#ff4d4d" }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "#ddd" } } },
+          scales: {
+            x: { stacked: true, ticks: { color: "#ddd" }, grid: { color: "rgba(255,255,255,0.05)" } },
+            y: { stacked: true, ticks: { color: "#ddd" }, beginAtZero: true, grid: { color: "rgba(255,255,255,0.05)" } }
+          }
+        }
+      });
+    }
+
+    // Dluhy
+    const debtForm = document.getElementById("debtForm");
+    const debtTable = document.querySelector("#debtTable tbody");
+    const ctxDebt = document.getElementById("debtChart").getContext("2d");
+    let debts = [], debtChart;
+
+    debtForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const name = debtName.value.trim();
+      const amount = parseFloat(debtAmount.value);
+      const paid = parseFloat(debtPaid.value);
+      const i = debts.findIndex(x => x.name === name);
+      if (i >= 0) debts[i] = { name, amount, paid };
+      else debts.push({ name, amount, paid });
+      debtForm.reset();
+      renderDebts();
+    });
+
+    function renderDebts() {
+      debtTable.innerHTML = "";
+      debts.forEach((d, i) => {
+        const remaining = d.amount - d.paid;
+        const percent = ((d.paid / d.amount) * 100).toFixed(1);
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${d.name}</td><td>${d.amount}</td><td>${d.paid}</td><td>${remaining}</td><td>${percent} %</td><td><button onclick="deleteDebt(${i})">🗑️</button></td>`;
+        debtTable.appendChild(row);
+      });
+      updateDebtChart();
+    }
+
+    function deleteDebt(i) {
+      debts.splice(i, 1);
+      renderDebts();
+    }
+
+    function updateDebtChart() {
+      if (debtChart) debtChart.destroy();
+      debtChart = new Chart(ctxDebt, {
+        type: 'bar',
+        data: {
+          labels: debts.map(d => d.name),
+          datasets: [
+            { label: "Uhrazeno", data: debts.map(d => d.paid), backgroundColor: "#00cc66" },
+            { label: "Zbývá", data: debts.map(d => d.amount - d.paid), backgroundColor: "#ff4d4d" }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "#ddd" } } },
+          scales: {
+            x: { stacked: true, ticks: { color: "#ddd" }, grid: { color: "rgba(255,255,255,0.05)" } },
+            y: { stacked: true, ticks: { color: "#ddd" }, beginAtZero: true, grid: { color: "rgba(255,255,255,0.05)" } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
