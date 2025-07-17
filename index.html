@@ -76,7 +76,7 @@
     <a href="#" onclick="showSection('expenses')">Náklady</a>
     <a href="#" onclick="showSection('debt')">Dluhy</a>
   </nav>
-
+<div id="stock-container"></div>
   <!-- Sekce: Dashboard -->
   <section id="dashboard" class="active">
     <h2>📊 Přehled portfolia</h2>
@@ -395,6 +395,62 @@
         }
       });
     }
+  </script>
+  <script>
+    let tickers = [];
+
+document.getElementById("formTransakce").addEventListener("submit", function (e) {
+  ...
+  if (!tickers.includes(ticker)) {
+    tickers.push(ticker);
+    displayStocks(); // Znovu načti a zobraz
+  }
+});
+    const stockContainer = document.getElementById("stock-container");
+
+    async function fetchStockData(ticker) {
+      const url = `https://yahoo-finance15.p.rapidapi.com/api/yahoo/qu/quote/${ticker}`;
+      const options = {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': '7907cfa146msh6ab915bab585a3bp190de3jsn931308660764',
+          'X-RapidAPI-Host': 'yahoo-finance15.p.rapidapi.com'
+        }
+      };
+
+      try {
+        const response = await fetch(url, options);
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error(`Chyba při načítání dat pro ${ticker}:`, error);
+        return null;
+      }
+    }
+
+    async function displayStocks() {
+      for (const ticker of tickers) {
+        const data = await fetchStockData(ticker);
+        if (data && data[0]) {
+          const stock = data[0];
+          const div = document.createElement("div");
+          div.style.border = "1px solid #ccc";
+          div.style.padding = "10px";
+          div.style.marginBottom = "10px";
+          div.style.backgroundColor = "#fff";
+          div.innerHTML = `
+            <h3>${stock.shortName} (${stock.symbol})</h3>
+            <p>Cena: <strong>${stock.regularMarketPrice}</strong> ${stock.currency}</p>
+            <p>Změna: <span style="color:${stock.regularMarketChange >= 0 ? 'green' : 'red'};">
+              ${stock.regularMarketChange.toFixed(2)} (${stock.regularMarketChangePercent.toFixed(2)}%)
+            </span></p>
+          `;
+          stockContainer.appendChild(div);
+        }
+      }
+    }
+
+    displayStocks();
   </script>
 </body>
 </html>
