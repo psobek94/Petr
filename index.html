@@ -1,434 +1,136 @@
+<!DOCTYPE html>
 <html lang="cs">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Investiční Portfolio</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Osobní Finance</title>
   <style>
+    :root {
+      --bg-color: #0f0f1a;
+      --card-color: #1c1c2e;
+      --text-color: #e0e0e0;
+      --accent-color: #00f0ff;
+      --hover-color: #22223b;
+      --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      font-family: var(--font-main);
+      color: var(--text-color);
     }
-    .stock-icon {
-      width: 24px;
-      height: 24px;
-      margin-right: 5px;
+
+    header {
+      background: #161625;
+      padding: 20px;
+      text-align: center;
+      font-size: 2em;
+      font-weight: bold;
+      color: var(--accent-color);
+      border-bottom: 2px solid var(--accent-color);
     }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      background-color: #12121f;
+      padding: 10px;
+    }
+
+    nav button {
+      background: none;
+      border: 2px solid var(--accent-color);
+      color: var(--accent-color);
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 1em;
+    }
+
+    nav button:hover {
+      background-color: var(--hover-color);
+    }
+
     .section {
-      margin-bottom: 60px;
+      display: none;
+      padding: 20px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .card {
+      background: var(--card-color);
+      padding: 20px;
+      border-radius: 10px;
+      margin: 10px 0;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
     }
   </style>
 </head>
 
 <body>
-  <div class="container mt-5">
-    <h1 class="mb-4">📈 Moje investiční portfolio</h1>
+  <header>Osobní Finance 2025</header>
+  <nav>
+    <button onclick="showSection('overview')">Přehled</button>
+    <button onclick="showSection('portfolio')">Portfolio</button>
+    <button onclick="showSection('income')">Příjmy</button>
+    <button onclick="showSection('expenses')">Výdaje</button>
+    <button onclick="showSection('goals')">Cíle</button>
+  </nav>
 
-    <!-- Přepínač měny -->
-    <div class="mb-4">
-      <label for="currencySwitch">Zobrazit hodnoty v:</label>
-      <select id="currencySwitch" class="form-select" style="width: 200px; display: inline-block">
-        <option value="CZK">CZK</option>
-        <option value="USD">USD</option>
-      </select>
+  <section id="overview" class="section active">
+    <div class="card">
+      <h2>Přehled</h2>
+      <p>Zde se zobrazí celkový přehled tvých financí, součet aktiv a pasiv, měsíční rozdíl příjmů a výdajů apod.</p>
     </div>
+  </section>
 
-    <!-- Přehled portfolia -->
-    <div class="section">
-      <h3>📊 Přehled portfolia</h3>
-      <canvas id="portfolioChart"></canvas>
+  <section id="portfolio" class="section">
+    <div class="card">
+      <h2>Portfolio</h2>
+      <p>Přehled tvých akcií, fondů a dalších investic. Grafy a výkonnost jednotlivých aktiv.</p>
     </div>
+  </section>
 
-    <!-- Tabulka s akciemi -->
-    <div class="section">
-      <h3>📃 Seznam akcií</h3>
-      <table class="table table-bordered">
-        <thead class="table-dark">
-          <tr>
-            <th>Název</th>
-            <th>Ticker</th>
-            <th>Logo</th>
-            <th>Počet</th>
-            <th>Průměrná nákupní cena</th>
-            <th>Aktuální cena</th>
-            <th>Celková hodnota</th>
-          </tr>
-        </thead>
-        <tbody id="stockTableBody"></tbody>
-      </table>
+  <section id="income" class="section">
+    <div class="card">
+      <h2>Příjmy</h2>
+      <p>Seznam všech příjmů, pravidelných i jednorázových, včetně plazmy, bonusů a dividend.</p>
     </div>
+  </section>
 
-    <!-- Osobní finance -->
-    <div class="section">
-      <h3>💰 Osobní finance</h3>
-      <p>Měsíční splátka hypotéky: <strong id="mortgagePayment">28 400 CZK</strong></p>
-      <p>Odhadovaný měsíční příjem: <strong id="monthlyIncome">61 500 CZK</strong></p>
-      <p>Poměr splátky k příjmu: <strong id="debtRatio"></strong></p>
+  <section id="expenses" class="section">
+    <div class="card">
+      <h2>Výdaje</h2>
+      <p>Přehled výdajů v kategoriích jako hypotéka, potraviny, děti, zábava atd.</p>
     </div>
+  </section>
 
-    <!-- Historie cen -->
-    <div class="section">
-      <h3>📅 Historie ceny akcií</h3>
-      <select id="historySelect" class="form-select mb-3" style="width: 300px"></select>
-      <canvas id="priceHistoryChart"></canvas>
+  <section id="goals" class="section">
+    <div class="card">
+      <h2>Cíle</h2>
+      <p>Krátkodobé a dlouhodobé finanční cíle (např. splacení hypotéky, důchod, dovolená, nové auto).</p>
     </div>
-
-  </div>
+  </section>
 
   <script>
-    const stocks = [
-      { name: "British American Tobacco", ticker: "BTI", shares: 40, avgPrice: 29.85 },
-      { name: "Realty Income", ticker: "O", shares: 25, avgPrice: 52.12 },
-      { name: "Advanced Micro Devices", ticker: "AMD", shares: 10, avgPrice: 86.82 },
-      { name: "Alphabet (Google)", ticker: "GOOG", shares: 4, avgPrice: 155.15 },
-      { name: "Dell Technologies", ticker: "DELL", shares: 11, avgPrice: 82.48 }
-    ];
-
-    const apiKey = "7907cfa146msh6ab915bab585a3bp190de3jsn931308660764";
-
-    const fetchStockData = async (ticker) => {
-      const response = await fetch(`https://yahoo-finance15.p.rapidapi.com/api/yahoo/qu/quote/${ticker}`, {
-        headers: {
-          'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': 'yahoo-finance15.p.rapidapi.com'
-        }
-      });
-      const data = await response.json();
-      return data[0].ask || data[0].regularMarketPrice;
-    };
-
-    const updateTable = async () => {
-      const table = document.getElementById("stockTableBody");
-      table.innerHTML = "";
-
-      let totalCZK = 0;
-
-      for (const stock of stocks) {
-        const currentPrice = await fetchStockData(stock.ticker);
-        const valueUSD = stock.shares * currentPrice;
-        const valueCZK = valueUSD * 23.3; // přibližný kurz
-        totalCZK += valueCZK;
-
-        const row = `
-          <tr>
-            <td>${stock.name}</td>
-            <td>${stock.ticker}</td>
-            <td><img class="stock-icon" src="https://logo.clearbit.com/${stock.ticker.toLowerCase()}.com" onerror="this.src='https://via.placeholder.com/24'"/></td>
-            <td>${stock.shares}</td>
-            <td>${stock.avgPrice.toFixed(2)} USD</td>
-            <td>${currentPrice.toFixed(2)} USD</td>
-            <td>${valueCZK.toFixed(2)} CZK</td>
-          </tr>
-        `;
-        table.innerHTML += row;
-
-        const option = document.createElement("option");
-        option.value = stock.ticker;
-        option.text = stock.name;
-        document.getElementById("historySelect").appendChild(option);
-      }
-
-      renderPieChart();
-    };
-
-    const renderPieChart = () => {
-      const ctx = document.getElementById("portfolioChart").getContext("2d");
-      new Chart(ctx, {
-        type: "pie",
-        data: {
-          labels: stocks.map(s => s.ticker),
-          datasets: [{
-            data: stocks.map(s => s.shares),
-            backgroundColor: ["#4caf50", "#2196f3", "#ff9800", "#9c27b0", "#f44336"]
-          }]
-        },
-        options: { responsive: true }
-      });
-    };
-
-    const updateDebtRatio = () => {
-      const income = 61500;
-      const mortgage = 28400;
-      const ratio = (mortgage / income * 100).toFixed(1);
-      document.getElementById("debtRatio").textContent = `${ratio}%`;
-    };
-
-    const fetchPriceHistory = async (ticker) => {
-      const response = await fetch(`https://yahoo-finance15.p.rapidapi.com/api/yahoo/hi/history/${ticker}/1mo`, {
-        headers: {
-          'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': 'yahoo-finance15.p.rapidapi.com'
-        }
-      });
-      const data = await response.json();
-      return data.items;
-    };
-
-    const renderHistoryChart = async (ticker) => {
-      const history = await fetchPriceHistory(ticker);
-      const dates = history.map(item => item.date);
-      const prices = history.map(item => item.close);
-
-      const ctx = document.getElementById("priceHistoryChart").getContext("2d");
-      new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: dates,
-          datasets: [{
-            label: `Vývoj ceny ${ticker}`,
-            data: prices,
-            borderColor: "#3e95cd",
-            fill: false
-          }]
-        },
-        options: { responsive: true }
-      });
-    };
-
-    document.getElementById("historySelect").addEventListener("change", (e) => {
-      renderHistoryChart(e.target.value);
-    });
-
-    window.onload = async () => {
-      updateDebtRatio();
-      await updateTable();
-    };
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
   </script>
-</body>
-  <!-- Investiční Web – Část 2 -->
-<section id="osobni-finance" class="bg-white py-20">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Osobní finance</h2>
-    <p class="text-lg text-gray-700 mb-6">
-      Osobní finance tvoří základ každého investičního plánu. Zde najdete přehled důležitých nástrojů a kalkulaček, které vám pomohou plánovat rozpočet, sledovat výdaje a připravit se na budoucnost.
-    </p>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="bg-gray-50 p-6 rounded-lg shadow">
-        <h3 class="text-xl font-semibold text-indigo-600 mb-2">Kalkulačka rozpočtu</h3>
-        <p class="text-gray-700 mb-4">Zadejte své měsíční příjmy a výdaje a zjistěte, kolik můžete ušetřit nebo investovat.</p>
-        <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Spustit kalkulačku</button>
-      </div>
-
-      <div class="bg-gray-50 p-6 rounded-lg shadow">
-        <h3 class="text-xl font-semibold text-indigo-600 mb-2">Plánovač cílů</h3>
-        <p class="text-gray-700 mb-4">Nastavte si finanční cíle – například koupi auta nebo bydlení – a sledujte svůj pokrok.</p>
-        <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Plánovat</button>
-      </div>
-
-      <div class="bg-gray-50 p-6 rounded-lg shadow">
-        <h3 class="text-xl font-semibold text-indigo-600 mb-2">Nástroj na srovnání půjček</h3>
-        <p class="text-gray-700 mb-4">Porovnejte úrokové sazby, poplatky a podmínky různých půjček a hypoték.</p>
-        <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Srovnat půjčky</button>
-      </div>
-
-      <div class="bg-gray-50 p-6 rounded-lg shadow">
-        <h3 class="text-xl font-semibold text-indigo-600 mb-2">Sledování výdajů</h3>
-        <p class="text-gray-700 mb-4">Zaznamenávejte si své denní výdaje a získejte přehled o svém finančním chování.</p>
-        <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Zaznamenávat</button>
-      </div>
-
-      <div class="bg-gray-50 p-6 rounded-lg shadow">
-        <h3 class="text-xl font-semibold text-indigo-600 mb-2">Přehled příjmů</h3>
-        <p class="text-gray-700 mb-4">Evidujte své příjmy z různých zdrojů – práce, investic, vedlejších projektů.</p>
-        <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Přidat příjem</button>
-      </div>
-
-      <div class="bg-gray-50 p-6 rounded-lg shadow">
-        <h3 class="text-xl font-semibold text-indigo-600 mb-2">Simulace důchodu</h3>
-        <p class="text-gray-700 mb-4">Zjistěte, jaký bude váš důchod na základě současného spoření a příspěvků.</p>
-        <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Simulovat</button>
-      </div>
-    </div>
-  </div>
-</section>
-  <html lang="cs">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Investiční Portfolio - Osobní Finance</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header>
-    <h1>Moje investiční portfolio</h1>
-    <nav>
-      <ul>
-        <li><a href="#akcie">Akcie</a></li>
-        <li><a href="#dividendy">Dividendy</a></li>
-        <li><a href="#technologie">Technologie</a></li>
-        <li><a href="#osobni-finance">Osobní finance</a></li>
-        <li><a href="#kontakt">Kontakt</a></li>
-      </ul>
-    </nav>
-  </header>
-
-  <main>
-    <section id="osobni-finance">
-      <h2>Osobní finance</h2>
-      <p>V této sekci spravuji své osobní finance včetně rozpočtování, sledování výdajů a plánování finančních cílů.</p>
-
-      <h3>Měsíční rozpočet</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Kategorie</th>
-            <th>Plánovaná částka (CZK)</th>
-            <th>Skutečná částka (CZK)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Bývání (hypotéka)</td><td>28 400</td><td>28 400</td></tr>
-          <tr><td>Potraviny</td><td>10 000</td><td>9 750</td></tr>
-          <tr><td>Doprava</td><td>4 000</td><td>3 800</td></tr>
-          <tr><td>Služby a energie</td><td>5 000</td><td>4 750</td></tr>
-          <tr><td>Volný čas</td><td>3 000</td><td>2 950</td></tr>
-          <tr><td>Děti</td><td>2 500</td><td>2 700</td></tr>
-          <tr><td>Spoření a investice</td><td>5 000</td><td>5 500</td></tr>
-        </tbody>
-      </table>
-
-      <h3>Vývoj čistého jmění</h3>
-      <p>Pravidelně sleduji čisté jmění, abych měl přehled o tom, jak rostu finančně:</p>
-      <ul>
-        <li>Leden 2025: 120 000 CZK</li>
-        <li>Únor 2025: 135 000 CZK</li>
-        <li>Březen 2025: 145 000 CZK</li>
-        <li>Duben 2025: 160 000 CZK</li>
-      </ul>
-
-      <h3>Finanční cíle</h3>
-      <ul>
-        <li>Spořit 100 000 CZK jako rezervu do konce roku 2025</li>
-        <li>Navýšit měsíční příjem o 20 % díky vedlejším projektům</li>
-        <li>Dosáhnout dividendového příjmu 2 000 CZK měsíčně</li>
-        <li>Investovat do rekonstrukce garáže a zahájit podnikání s květinami</li>
-      </ul>
-
-      <h3>Finanční nástroje</h3>
-      <ul>
-        <li>Tabulkový přehled v Google Sheets</li>
-        <li>Mobilní aplikace na sledování rozpočtu (např. Wallet, Spendee)</li>
-        <li>Trackování akcií a kryptoměn pomocí vlastní webové aplikace</li>
-        <li>Přehled výnosů a výdajů z krevní plazmy</li>
-      </ul>
-    </section>
-
-    <section id="kontakt">
-      <h2>Kontakt</h2>
-      <form>
-        <label for="name">Jméno:</label>
-        <input type="text" id="name" name="name" required />
-
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required />
-
-        <label for="message">Zpráva:</label>
-        <textarea id="message" name="message" rows="4" required></textarea>
-
-        <button type="submit">Odeslat</button>
-      </form>
-    </section>
-  </main>
-
-  <footer>
-    <p>&copy; 2025 Moje investiční portfolio</p>
-  </footer>
-</body>
-    <html lang="cs">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Investiční Portfolio - Osobní Finance</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header>
-    <h1>Moje investiční portfolio</h1>
-    <nav>
-      <ul>
-        <li><a href="#akcie">Akcie</a></li>
-        <li><a href="#dividendy">Dividendy</a></li>
-        <li><a href="#technologie">Technologie</a></li>
-        <li><a href="#osobni-finance">Osobní finance</a></li>
-        <li><a href="#kontakt">Kontakt</a></li>
-      </ul>
-    </nav>
-  </header>
-
-  <main>
-    <section id="osobni-finance">
-      <h2>Osobní finance</h2>
-      <p>V této sekci spravuji své osobní finance včetně rozpočtování, sledování výdajů a plánování finančních cílů.</p>
-
-      <h3>Měsíční rozpočet</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Kategorie</th>
-            <th>Plánovaná částka (CZK)</th>
-            <th>Skutečná částka (CZK)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Bývání (hypotéka)</td><td>28 400</td><td>28 400</td></tr>
-          <tr><td>Potraviny</td><td>10 000</td><td>9 750</td></tr>
-          <tr><td>Doprava</td><td>4 000</td><td>3 800</td></tr>
-          <tr><td>Služby a energie</td><td>5 000</td><td>4 750</td></tr>
-          <tr><td>Volný čas</td><td>3 000</td><td>2 950</td></tr>
-          <tr><td>Děti</td><td>2 500</td><td>2 700</td></tr>
-          <tr><td>Spoření a investice</td><td>5 000</td><td>5 500</td></tr>
-        </tbody>
-      </table>
-
-      <h3>Vývoj čistého jmění</h3>
-      <p>Pravidelně sleduji čisté jmění, abych měl přehled o tom, jak rostu finančně:</p>
-      <ul>
-        <li>Leden 2025: 120 000 CZK</li>
-        <li>Únor 2025: 135 000 CZK</li>
-        <li>Březen 2025: 145 000 CZK</li>
-        <li>Duben 2025: 160 000 CZK</li>
-      </ul>
-
-      <h3>Finanční cíle</h3>
-      <ul>
-        <li>Spořit 100 000 CZK jako rezervu do konce roku 2025</li>
-        <li>Navýšit měsíční příjem o 20 % díky vedlejším projektům</li>
-        <li>Dosáhnout dividendového příjmu 2 000 CZK měsíčně</li>
-        <li>Investovat do rekonstrukce garáže a zahájit podnikání s květinami</li>
-      </ul>
-
-      <h3>Finanční nástroje</h3>
-      <ul>
-        <li>Tabulkový přehled v Google Sheets</li>
-        <li>Mobilní aplikace na sledování rozpočtu (např. Wallet, Spendee)</li>
-        <li>Trackování akcií a kryptoměn pomocí vlastní webové aplikace</li>
-        <li>Přehled výnosů a výdajů z krevní plazmy</li>
-      </ul>
-    </section>
-
-    <section id="kontakt">
-      <h2>Kontakt</h2>
-      <form>
-        <label for="name">Jméno:</label>
-        <input type="text" id="name" name="name" required />
-
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required />
-
-        <label for="message">Zpráva:</label>
-        <textarea id="message" name="message" rows="4" required></textarea>
-
-        <button type="submit">Odeslat</button>
-      </form>
-    </section>
-  </main>
-
-  <footer>
-    <p>&copy; 2025 Moje investiční portfolio</p>
-  </footer>
 </body>
 
 </html>
