@@ -1,155 +1,613 @@
 <!DOCTYPE html>
 <html lang="cs">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Osobní Finance</title>
+  <title>Moje investiční portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-color: #0f0f1a;
-      --card-color: #1c1c2e;
-      --text-color: #e0e0e0;
-      --accent-color: #00f0ff;
-      --hover-color: #22223b;
-      --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
     body {
+      font-family: 'Inter', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: var(--bg-color);
-      font-family: var(--font-main);
-      color: var(--text-color);
+      background-color: #0d1117;
+      color: #ddd;
     }
-
     header {
-      background: #161625;
-      padding: 20px;
+      background: linear-gradient(to right, #0d1117, #1a1f2c);
+      padding: 1rem;
       text-align: center;
-      font-size: 2em;
-      font-weight: bold;
-      color: var(--accent-color);
-      border-bottom: 2px solid var(--accent-color);
     }
-
+    header h1 {
+      margin: 0;
+    }
     nav {
       display: flex;
       justify-content: center;
-      gap: 20px;
-      background-color: #12121f;
-      padding: 10px;
+      gap: 1rem;
+      background-color: #161b22;
+      padding: 0.5rem;
     }
-
-    nav button {
-      background: none;
-      border: 2px solid var(--accent-color);
-      color: var(--accent-color);
-      padding: 10px 20px;
+    nav a {
+      color: #ddd;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+    }
+    nav a:hover {
+      background-color: #30363d;
+    }
+    .container {
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #30363d;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background-color: #21262d;
+    }
+    select, input[type="text"], input[type="number"], input[type="date"], select, button {
+      background-color: #161b22;
+      color: #ddd;
+      border: 1px solid #30363d;
+      padding: 0.3rem;
+      margin: 0.3rem;
+    }
+    button {
       cursor: pointer;
-      transition: 0.3s;
-      font-size: 1em;
     }
-
-    nav button:hover {
-      background-color: var(--hover-color);
-    }
-
-    .section {
-      display: none;
-      padding: 20px;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    .active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .card {
-      background: var(--card-color);
-      padding: 20px;
-      border-radius: 10px;
-      margin: 10px 0;
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
-    }
+    section { display: none; }
+    section.active { display: block; }
   </style>
 </head>
-
 <body>
-  <header>Osobní Finance 2025</header>
+  <header>
+    <h1>Moje investiční portfolio</h1>
+  </header>
+
   <nav>
-    <button onclick="showSection('overview')">Přehled</button>
-    <button onclick="showSection('portfolio')">Portfolio</button>
-    <button onclick="showSection('income')">Příjmy</button>
-    <button onclick="showSection('expenses')">Výdaje</button>
-    <button onclick="showSection('goals')">Cíle</button>
+    <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+    <a href="#" onclick="showSection('calendar')">Dividendový kalendář</a>
+    <a href="#" onclick="showSection('performance')">Výkonnost</a>
+    <a href="#" onclick="showSection('dividends')">Dividendy</a>
+    <a href="#" onclick="showSection('diversification')">Diversifikace</a>
+    <a href="#" onclick="showSection('transactions')">Transakce</a>
   </nav>
 
-  <section id="prehlad" class="p-4">
-  <div class="max-w-4xl mx-auto bg-white dark:bg-gray-900 shadow-md rounded-2xl p-6">
-    <h2 class="text-2xl font-bold mb-4">Přehled akcií</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-      <div>
-        <span class="font-medium">Název:</span> AMD
-      </div>
-      <div>
-        <span class="font-medium">Počet akcií:</span> 10
-      </div>
-      <div>
-        <span class="font-medium">Nákupní cena:</span> $86.16
-      </div>
-      <div>
-        <span class="font-medium">Datum nákupu:</span> 16. 4. 2025
-      </div>
-      <div>
-        <span class="font-medium">Investovaná částka:</span> $861.60
-      </div>
-      <div>
-        <span class="font-medium">Investovaná částka v CZK:</span> 20 678 Kč
-      </div>
-    </div>
-  </div>
-</section>
+  <section id="dashboard" class="container active">
+    <!-- Původní dashboard sekce -->
+    <label for="currency">Měna:</label>
+    <select id="currency">
+      <option value="USD">USD</option>
+      <option value="CZK">CZK</option>
+    </select>
 
-  <section id="portfolio" class="section">
-    <div class="card">
-      <h2>Portfolio</h2>
-      <p>Přehled tvých akcií, fondů a dalších investic. Grafy a výkonnost jednotlivých aktiv.</p>
-    </div>
+    <input type="text" id="search" placeholder="Hledat akcie..." style="float:right;"/>
+
+    <table id="portfolio">
+      <thead>
+        <tr>
+          <th>Logo</th>
+          <th>Název</th>
+          <th>Ticker</th>
+          <th>Počet</th>
+          <th>Cena (USD)</th>
+          <th>Hodnota</th>
+          <th>Div. výnos</th>
+          <th>Dividenda ročně</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><img src="https://logo.clearbit.com/apple.com" alt="Apple" width="32" /></td>
+          <td>Apple</td>
+          <td>AAPL</td>
+          <td>5</td>
+          <td>180</td>
+          <td class="value" data-usd="900">900</td>
+          <td>0.5%</td>
+          <td>4.5</td>
+        </tr>
+        <tr>
+          <td><img src="https://logo.clearbit.com/microsoft.com" alt="Microsoft" width="32" /></td>
+          <td>Microsoft</td>
+          <td>MSFT</td>
+          <td>3</td>
+          <td>350</td>
+          <td class="value" data-usd="1050">1050</td>
+          <td>0.8%</td>
+          <td>8.4</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
-  <section id="income" class="section">
-    <div class="card">
-      <h2>Příjmy</h2>
-      <p>Seznam všech příjmů, pravidelných i jednorázových, včetně plazmy, bonusů a dividend.</p>
-    </div>
+  <section id="calendar" class="container">
+    <h2>📅 Dividendový kalendář</h2>
+    <label for="monthSelect">Zobrazit měsíc:</label>
+    <select id="monthSelect">
+      <option value="all">Vše</option>
+      <option value="2025-07">Červenec 2025</option>
+      <option value="2025-08">Srpen 2025</option>
+    </select>
+
+    <table id="dividendTable">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Název</th>
+          <th>Ex-div date</th>
+          <th>Payment date</th>
+          <th>Částka (USD)</th>
+          <th>Frekvence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-month="2025-07">
+          <td>BTI</td>
+          <td>British American Tobacco</td>
+          <td>2025-07-10</td>
+          <td>2025-08-04</td>
+          <td>0.73</td>
+          <td>Kvartálně</td>
+        </tr>
+        <tr data-month="2025-08">
+          <td>O</td>
+          <td>Realty Income</td>
+          <td>2025-08-15</td>
+          <td>2025-09-01</td>
+          <td>0.25</td>
+          <td>Měsíčně</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <canvas id="dividendChart" style="margin-top:2rem;"></canvas>
   </section>
 
-  <section id="expenses" class="section">
-    <div class="card">
-      <h2>Výdaje</h2>
-      <p>Přehled výdajů v kategoriích jako hypotéka, potraviny, děti, zábava atd.</p>
-    </div>
+  <section id="performance" class="container">
+    <h2>📊 Srovnání s indexem S&P 500</h2>
+    <canvas id="performanceChart"></canvas>
   </section>
 
-  <section id="goals" class="section">
-    <div class="card">
-      <h2>Cíle</h2>
-      <p>Krátkodobé a dlouhodobé finanční cíle (např. splacení hypotéky, důchod, dovolená, nové auto).</p>
-    </div>
+  <section id="transactions" class="container">
+    <h2>🧾 Transakce</h2>
+
+    <!-- Import CSV -->
+    <input type="file" id="csvInput" accept=".csv" style="margin-bottom:1rem;">
+    <button id="importCsvBtn">Importovat CSV</button>
+
+    <form id="transactionForm" style="margin-top:1rem;">
+      <input type="text" id="ticker" placeholder="Ticker (např. AAPL)" required />
+      <input type="number" id="quantity" placeholder="Počet" required />
+      <input type="number" step="0.01" id="price" placeholder="Cena za kus" required />
+      <input type="date" id="date" required />
+      <select id="type" required>
+        <option value="buy">Nákup</option>
+        <option value="sell">Prodej</option>
+      </select>
+      <button type="submit">Přidat transakci</button>
+    </form>
+
+    <div id="portfolio-summary" style="margin-top:1rem; font-weight:bold;"></div>
+
+    <table id="transactionTable">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Počet</th>
+          <th>Cena</th>
+          <th>Typ</th>
+          <th>Datum</th>
+          <th>Aktuální cena</th>
+          <th>Zisk/Ztráta</th>
+          <th>%</th>
+          <th>Akce</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Papa Parse pro CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <script>
     function showSection(id) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
     }
-  </script>
-</body>
 
+    const currencySelect = document.getElementById("currency");
+    const values = document.querySelectorAll(".value");
+    const exchangeRate = 23.5;
+
+    currencySelect.addEventListener("change", () => {
+      const currency = currencySelect.value;
+      values.forEach(cell => {
+        const usd = parseFloat(cell.dataset.usd);
+        cell.textContent = currency === "CZK" ? (usd * exchangeRate).toFixed(2) : usd.toFixed(2);
+      });
+    });
+
+    const searchInput = document.getElementById("search");
+    searchInput.addEventListener("input", () => {
+      const filter = searchInput.value.toLowerCase();
+      const rows = document.querySelectorAll("#portfolio tbody tr");
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      });
+    });
+
+    const monthSelect = document.getElementById("monthSelect");
+    monthSelect.addEventListener("change", () => {
+      const selected = monthSelect.value;
+      document.querySelectorAll("#dividendTable tbody tr").forEach(row => {
+        row.style.display = (selected === "all" || row.dataset.month === selected) ? "" : "none";
+      });
+    });
+
+    const ctxDiv = document.getElementById("dividendChart").getContext("2d");
+    new Chart(ctxDiv, {
+      type: "bar",
+      data: {
+        labels: ["2025-05", "2025-06", "2025-07", "2025-08", "2025-09"],
+        datasets: [{
+          label: "Vyplacené dividendy (USD)",
+          data: [6.25, 12.5, 18.75, 22.0, 25.4],
+          backgroundColor: "rgba(0, 153, 255, 0.8)",
+          borderColor: "rgba(0, 153, 255, 1)",
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: "#ddd" }, grid: { color: "rgba(255,255,255,0.1)" } },
+          y: { ticks: { color: "#ddd" }, grid: { color: "rgba(255,255,255,0.1)" }, beginAtZero: true }
+        }
+      }
+    });
+
+    const ctxPerf = document.getElementById("performanceChart").getContext("2d");
+    new Chart(ctxPerf, {
+      type: "line",
+      data: {
+        labels: ["2025-03", "2025-04", "2025-05", "2025-06", "2025-07"],
+        datasets: [
+          {
+            label: "Moje portfolio",
+            data: [0, 2.3, 4.8, 7.1, 9.4],
+            borderColor: "#00ccff",
+            backgroundColor: "transparent",
+            tension: 0.4
+          },
+          {
+            label: "S&P 500",
+            data: [0, 1.1, 2.7, 3.5, 4.9],
+            borderColor: "#999",
+            backgroundColor: "transparent",
+            borderDash: [5, 5],
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: "#ccc" } },
+          tooltip: {
+            backgroundColor: "#222",
+            titleColor: "#fff",
+            bodyColor: "#fff"
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: "#ddd" },
+            grid: { color: "rgba(255,255,255,0.05)" }
+          },
+          y: {
+            ticks: { color: "#ddd" },
+            grid: { color: "rgba(255,255,255,0.05)" },
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // --- Transakce s importem CSV ---
+
+    const transactionForm = document.getElementById("transactionForm");
+    const transactionTable = document.querySelector("#transactionTable tbody");
+    const summaryDiv = document.getElementById("portfolio-summary");
+    let transactions = JSON.parse(localStorage.getItem("transactions") || "[]");
+
+    // Cache aktuálních cen
+    let priceCache = {};
+
+    async function fetchCurrentPrice(ticker) {
+      if (priceCache[ticker]) return priceCache[ticker];
+      try {
+        const response = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`);
+        const data = await response.json();
+        const price = data.quoteResponse.result[0]?.regularMarketPrice || 0;
+        priceCache[ticker] = price;
+        return price;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    async function renderTransactions() {
+      transactionTable.innerHTML = "";
+      priceCache = {}; // Reset cache při každém renderu
+
+      // Seznam tickerů
+      const tickers = [...new Set(transactions.map(tx => tx.ticker))];
+
+      // Načtení aktuálních cen
+      const prices = {};
+      for (const ticker of tickers) {
+        prices[ticker] = await fetchCurrentPrice(ticker);
+      }
+
+      // Výpočty portfolia
+      let totalInvested = 0;
+      let totalCurrent = 0;
+      let totalProfit = 0;
+
+      transactions.forEach((tx, idx) => {
+        const currentPrice = prices[tx.ticker] || 0;
+        let profit = 0;
+        let profitPercent = 0;
+        let color = "#ccc";
+        if (tx.type === "buy") {
+          profit = (currentPrice - tx.price) * tx.quantity;
+          profitPercent = ((currentPrice - tx.price) / tx.price) * 100;
+          totalInvested += tx.price * tx.quantity;
+          totalCurrent += currentPrice * tx.quantity;
+          totalProfit += profit;
+        } else if (tx.type === "sell") {
+          profit = (tx.price - currentPrice) * tx.quantity;
+          profitPercent = ((tx.price - currentPrice) / currentPrice) * 100;
+          totalInvested -= tx.price * tx.quantity;
+          totalCurrent -= currentPrice * tx.quantity;
+          totalProfit -= profit;
+        }
+        color = profit >= 0 ? "#4caf50" : "#e53935";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${tx.ticker}</td>
+          <td>${tx.quantity}</td>
+          <td>${tx.price}</td>
+          <td>${tx.type === "buy" ? "Nákup" : "Prodej"}</td>
+          <td>${tx.date}</td>
+          <td>${currentPrice ? currentPrice.toFixed(2) : "-"}</td>
+          <td style="color:${color}">${profit.toFixed(2)}</td>
+          <td style="color:${color}">${profitPercent.toFixed(2)}%</td>
+          <td><button onclick="deleteTransaction(${idx})" style="color:#e53935;">Smazat</button></td>
+        `;
+        transactionTable.appendChild(row);
+      });
+
+      summaryDiv.innerHTML = `
+        Celkově investováno: <span style="color:#00ccff">${totalInvested.toFixed(2)}</span> USD &nbsp; | &nbsp;
+        Aktuální hodnota: <span style="color:#00ccff">${totalCurrent.toFixed(2)}</span> USD &nbsp; | &nbsp;
+        Zisk/Ztráta: <span style="color:${totalProfit >= 0 ? "#4caf50" : "#e53935"}">${totalProfit.toFixed(2)} USD</span>
+      `;
+    }
+
+    window.deleteTransaction = function(index) {
+      if (confirm("Opravdu smazat tuto transakci?")) {
+        transactions.splice(index, 1);
+        localStorage.setItem("transactions", JSON.stringify(transactions));
+        renderTransactions();
+      }
+    };
+
+    transactionForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const newTx = {
+        ticker: document.getElementById("ticker").value.toUpperCase(),
+        quantity: parseFloat(document.getElementById("quantity").value),
+        price: parseFloat(document.getElementById("price").value),
+        date: document.getElementById("date").value,
+        type: document.getElementById("type").value
+      };
+      transactions.push(newTx);
+      localStorage.setItem("transactions", JSON.stringify(transactions));
+      renderTransactions();
+      transactionForm.reset();
+    });
+
+    // --- Import CSV ---
+
+    document.getElementById("importCsvBtn").addEventListener("click", function() {
+      const fileInput = document.getElementById("csvInput");
+      if (!fileInput.files.length) {
+        alert("Vyberte CSV soubor.");
+        return;
+      }
+      Papa.parse(fileInput.files[0], {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          let imported = 0;
+          results.data.forEach(row => {
+            if (row.ticker && row.quantity && row.price && row.date && row.type) {
+              transactions.push({
+                ticker: row.ticker.toUpperCase(),
+                quantity: parseFloat(row.quantity),
+                price: parseFloat(row.price),
+                date: row.date,
+                type: row.type.toLowerCase()
+              });
+              imported++;
+            }
+          });
+          localStorage.setItem("transactions", JSON.stringify(transactions));
+          renderTransactions();
+          alert(`Importováno ${imported} transakcí.`);
+          // Vyčistit input
+          fileInput.value = "";
+        }
+      });
+    });
+renderTransactions();
+    updateCoverage(); // výpočet pokrytí po načtení
+
+  </script>
+
+  <section id="income" class="container">
+    <h2>🪙 Pasivní příjem</h2>
+
+    <label for="expenseGoal">Měsíční výdajový cíl (<span id="currencyLabel">USD</span>):</label>
+    <input type="number" id="expenseGoal" value="1000" min="0" />
+
+    <div style="margin-top: 1rem;">
+      <strong>Pokrytí výdajů:</strong>
+      <div id="coverageText">Načítání...</div>
+      <div style="background:#20263d;border-radius:5px;overflow:hidden;margin-top:5px;">
+        <div id="coverageBar" style="background:#00cc66;height:20px;width:0%;text-align:center;color:#fff;font-size:0.9rem;transition: width 0.5s ease;">
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:2rem;">📈 Zdroj příjmu</h3>
+    <table id="incomeTable">
+      <thead>
+        <tr>
+          <th>Název</th>
+          <th>Měsíční částka</th>
+          <th>Roční částka</th>
+          <th>Akce</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dividendy</td>
+          <td class="income-month" data-usd="120">120</td>
+          <td class="income-year" data-usd="1440">1440</td>
+          <td><button onclick="removeIncome(this)">🗑</button></td>
+        </tr>
+        <tr>
+          <td>Nájem</td>
+          <td class="income-month" data-usd="400">400</td>
+          <td class="income-year" data-usd="4800">4800</td>
+          <td><button onclick="removeIncome(this)">🗑</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:1rem;">
+      <input type="text" id="incomeName" placeholder="Název příjmu">
+      <input type="number" id="incomeMonthly" placeholder="Měsíční částka">
+      <button onclick="addIncome()">➕ Přidat</button>
+    </div>
+
+    <h3 style="margin-top:2rem;">📊 Graf vývoje pasivního příjmu</h3>
+    <canvas id="incomeChart" height="100"></canvas>
+  </section>
+
+  <script>
+    function updateCoverage() {
+      const goal = parseFloat(document.getElementById("expenseGoal").value);
+      const rows = document.querySelectorAll("#incomeTable tbody tr");
+      let total = 0;
+      rows.forEach(row => {
+        const cell = row.querySelector(".income-month");
+        if (cell) {
+          total += parseFloat(cell.dataset.usd);
+        }
+      });
+      const percent = goal > 0 ? Math.min((total / goal) * 100, 100).toFixed(1) : 0;
+      const coverageBar = document.getElementById("coverageBar");
+      const coverageText = document.getElementById("coverageText");
+      coverageBar.style.width = `${percent}%`;
+      coverageBar.textContent = `${percent}%`;
+      coverageText.textContent = `Z pokrytí ${total.toFixed(2)} / ${goal.toFixed(2)} USD`;
+    }
+
+    function addIncome() {
+      const name = document.getElementById("incomeName").value;
+      const monthly = parseFloat(document.getElementById("incomeMonthly").value);
+      if (!name || isNaN(monthly)) return;
+
+      const tbody = document.querySelector("#incomeTable tbody");
+      const tr = document.createElement("tr");
+
+      const yearly = monthly * 12;
+
+      tr.innerHTML = `
+        <td>${name}</td>
+        <td class="income-month" data-usd="${monthly}">${monthly}</td>
+        <td class="income-year" data-usd="${yearly}">${yearly}</td>
+        <td><button onclick="removeIncome(this)">🗑</button></td>
+      `;
+      tbody.appendChild(tr);
+
+      document.getElementById("incomeName").value = "";
+      document.getElementById("incomeMonthly").value = "";
+
+      updateCoverage();
+    }
+
+    function removeIncome(btn) {
+      btn.closest("tr").remove();
+      updateCoverage();
+    }
+
+    const incomeChart = new Chart(document.getElementById("incomeChart").getContext("2d"), {
+      type: "line",
+      data: {
+        labels: ["2025-03", "2025-04", "2025-05", "2025-06", "2025-07"],
+        datasets: [{
+          label: "Pasivní příjem (USD)",
+          data: [420, 530, 620, 660, 740],
+          borderColor: "#00cc66",
+          backgroundColor: "transparent",
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: "#ccc" } },
+          tooltip: {
+            backgroundColor: "#222",
+            titleColor: "#fff",
+            bodyColor: "#fff"
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: "#ddd" },
+            grid: { color: "rgba(255,255,255,0.05)" }
+          },
+          y: {
+            ticks: { color: "#ddd" },
+            grid: { color: "rgba(255,255,255,0.05)" },
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+
+</body>
 </html>
