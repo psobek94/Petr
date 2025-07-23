@@ -84,31 +84,105 @@
     <a href="#" onclick="showSection('transactions')">Transakce</a>
   </nav>
 
-  <section id="dashboard" class="container active">
+  <section id="dashboard">
   <h2>Dashboard</h2>
+  <div id="portfolio"></div>
 
-  <table id="portfolioTable">
-    <thead>
-      <tr>
-        <th>Ticker</th>
-        <th>Počet</th>
-        <th>Nákupní cena ($)</th>
-        <th>Aktuální cena ($)</th>
-        <th>Zisk/Ztráta ($)</th>
-        <th>Zisk/Ztráta (%)</th>
-        <th>Váha (%)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Data se načtou pomocí JavaScriptu -->
-    </tbody>
-  </table>
+  <script>
+    const API_KEY = "API_KEY"; // nahraď vlastním klíčem
+    const portfolioData = [
+      { ticker: "AAPL", amount: 10, buyPrice: 150, currency: "USD" },
+      { ticker: "SAP", amount: 5, buyPrice: 120, currency: "EUR" },
+      { ticker: "GOOGL", amount: 4, buyPrice: 130, currency: "USD" }
+    ];
 
-  <label for="currency">Měna:</label>
-  <select id="currency">
-    <option value="USD">USD</option>
-    <option value="CZK">CZK</option>
-  </select>
+    const getQuote = async (symbol) => {
+      const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`);
+      const data = await res.json();
+      return data.c;
+    };
+
+    const getCurrencyRate = async (from, to) => {
+      const res = await fetch(`https://finnhub.io/api/v1/forex/rates?base=${from}&token=${API_KEY}`);
+      const data = await res.json();
+      return data.quote[to];
+    };
+
+    const renderPortfolio = async () => {
+      const usdToCzk = await getCurrencyRate("USD", "CZK");
+      const eurToCzk = await getCurrencyRate("EUR", "CZK");
+
+      let totalValueUSD = 0;
+
+      const rows = await Promise.all(portfolioData.map(async (stock) => {
+        const currentPrice = await getQuote(stock.ticker);
+        const value = currentPrice * stock.amount;
+        const invested = stock.buyPrice * stock.amount;
+        const profit = value - invested;
+        const profitPercent = ((profit / invested) * 100).toFixed(2);
+
+        let exchangeRate = 1;
+        if (stock.currency === "USD") exchangeRate = usdToCzk;
+        else if (stock.currency === "EUR") exchangeRate = eurToCzk;
+
+        totalValueUSD += value;
+
+        return {
+          ...stock,
+          currentPrice,
+          value,
+          invested,
+          profit,
+          profitPercent,
+          valueCZK: (value * exchangeRate).toFixed(2),
+          currencyRate: exchangeRate,
+        };
+      }));
+
+      const portfolioDiv = document.getElementById("portfolio");
+      portfolioDiv.innerHTML = `
+        <table border="1" cellspacing="0" cellpadding="5">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Počet</th>
+              <th>Nákupní cena</th>
+              <th>Měna</th>
+              <th>Aktuální cena</th>
+              <th>Hodnota (USD)</th>
+              <th>Hodnota (CZK)</th>
+              <th>Zisk / Ztráta</th>
+              <th>Zisk / Ztráta (%)</th>
+              <th>Podíl v portfoliu (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => `
+              <tr>
+                <td>${row.ticker}</td>
+                <td>${row.amount}</td>
+                <td>${row.buyPrice.toFixed(2)}</td>
+                <td>${row.currency}</td>
+                <td>${row.currentPrice.toFixed(2)}</td>
+                <td>${row.value.toFixed(2)}</td>
+                <td>${row.valueCZK}</td>
+                <td style="color:${row.profit >= 0 ? 'green' : 'red'};">
+                  ${row.profit.toFixed(2)}
+                </td>
+                <td style="color:${row.profit >= 0 ? 'green' : 'red'};">
+                  ${row.profitPercent}%
+                </td>
+                <td>${((row.value / totalValueUSD) * 100).toFixed(2)}%</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+    };
+
+    renderPortfolio();
+  </script>
+</section>
 
   <input type="text" id="search" placeholder="Hledat akcie..." style="float:right;"/>
 </section>
