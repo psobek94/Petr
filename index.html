@@ -110,6 +110,7 @@
   </nav>
 
   <section id="dashboard">
+
     <input type="text" id="searchTicker" placeholder="Zadej Ticker (např. BTI)" />
   <h2>Dashboard</h2>
   <div id="portfolio"></div>
@@ -814,6 +815,80 @@ renderTransactions();
   document.getElementById('themeSwitch').addEventListener('change', function () {
   document.body.classList.toggle('dark-mode', this.checked);
 });
+  async function fetchCurrentPrice(ticker) {
+  const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${API_KEY}`);
+  const data = await res.json();
+  return data.c; // current price
+}
+
+function getDaysHeld(purchaseDate) {
+  const purchase = new Date(purchaseDate);
+  const today = new Date();
+  const diffTime = Math.abs(today - purchase);
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+function formatCurrency(value, currency = 'USD') {
+  return currency === 'CZK'
+    ? `${(value * 23.5).toFixed(2)} CZK` // přepočet přibližně
+    : `${value.toFixed(2)} USD`;
+}
+
+async function renderDashboard() {
+  const container = document.getElementById('dashboardContainer');
+  const searchInput = document.getElementById('searchInput');
+  const currencyToggle = document.getElementById('currencyToggle');
+  const themeToggle = document.getElementById('themeToggle');
+
+  let currency = 'USD';
+
+  function render() {
+    const query = searchInput.value.toUpperCase();
+    container.innerHTML = '';
+    stocks
+      .filter(stock => stock.ticker.includes(query))
+      .forEach(async (stock) => {
+        const currentPrice = await fetchCurrentPrice(stock.ticker);
+        const positionValue = stock.shares * currentPrice;
+        const gainLoss = (currentPrice - stock.purchasePrice) * stock.shares;
+        const daysHeld = getDaysHeld(stock.purchaseDate);
+
+        const box = document.createElement('div');
+        box.className = 'stock-box';
+        box.innerHTML = `
+          <h3>${stock.ticker}</h3>
+          <p>Počet akcií: ${stock.shares}</p>
+          <p>Nákupní cena: ${formatCurrency(stock.purchasePrice, currency)}</p>
+          <p>Aktuální cena: ${formatCurrency(currentPrice, currency)}</p>
+          <p>Hodnota pozice: ${formatCurrency(positionValue, currency)}</p>
+          <p>Zisk/ztráta: ${formatCurrency(gainLoss, currency)}</p>
+          <p>Držení: ${daysHeld} dní</p>
+          <p>Vyplacená dividenda: ${formatCurrency(stock.dividendsReceived, currency)}</p>
+          <p>Sektor: ${stock.sector}</p>
+          <p>Geografie: ${stock.country}</p>
+        `;
+        container.appendChild(box);
+      });
+  }
+
+  // Vyhledávání
+  searchInput.addEventListener('input', render);
+
+  // Přepínání měny
+  currencyToggle.addEventListener('change', () => {
+    currency = currencyToggle.checked ? 'CZK' : 'USD';
+    render();
+  });
+
+  // Přepínání světlé/tmavé
+  themeToggle.addEventListener('change', () => {
+    document.body.classList.toggle('dark-mode', themeToggle.checked);
+  });
+
+  render();
+}
+
+renderDashboard();
 </script>
 
 </body>
