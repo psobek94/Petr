@@ -1,5 +1,20 @@
 <!DOCTYPE html>
 <html lang="cs">
+  <!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Styl přepínače režimu -->
+<style>
+  .theme-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  body.dark-mode {
+    background-color: #121212;
+    color: white;
+  }
+</style>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -71,6 +86,16 @@
   </style>
 </head>
 <body>
+  <div class="theme-toggle">
+  <label>
+    <input type="checkbox" id="themeSwitch"> Tmavý režim
+  </label>
+</div>
+  <div class="theme-toggle">
+  <label>
+    <input type="checkbox" id="themeSwitch"> Tmavý režim
+  </label>
+</div>
   <header>
     <h1>Moje investiční portfolio</h1>
   </header>
@@ -85,6 +110,7 @@
   </nav>
 
   <section id="dashboard">
+    <input type="text" id="searchTicker" placeholder="Zadej Ticker (např. BTI)" />
   <h2>Dashboard</h2>
   <div id="portfolio"></div>
 
@@ -785,7 +811,11 @@ renderTransactions();
   }
 
   updatePortfolio();
+  document.getElementById('themeSwitch').addEventListener('change', function () {
+  document.body.classList.toggle('dark-mode', this.checked);
+});
 </script>
+
 </body>
 </body>
 </html>
