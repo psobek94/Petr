@@ -16,6 +16,12 @@
   }
 </style>
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  .dark-mode { background: #121212; color: #ddd; }
+  .stock-row.plus { background-color: #153; }
+  .stock-row.minus { background-color: #531; }
+</style>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Moje investiční portfolio</title>
@@ -110,6 +116,20 @@
   </nav>
 
   <section id="dashboard">
+    <div>
+  <label><input type="checkbox" id="themeToggle"> Tmavý režim</label>
+  <label><input type="checkbox" id="currencyToggle"> Přepnout na CZK</label>
+</div>
+<input type="text" id="searchTicker" placeholder="Filtrovat ticker…" />
+<table id="dashboardTable">
+  <thead>
+    <tr>
+      <th>Ticker</th><th>Počet</th><th>Nákupní cena</th><th>Aktuální cena</th>
+      <th>Hodnota</th><th>Zisk/Ztráta</th><th>Dny držení</th><th>Vyplacená dividenda</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
     <input type="text" id="searchTicker" placeholder="Zadej Ticker (např. BTI)" />
   <h2>Dashboard</h2>
@@ -889,6 +909,72 @@ async function renderDashboard() {
 }
 
 renderDashboard();
+  const API_KEY = 'TVŮJ_FINNHUB_API_KEY';
+
+// Data pro BTI:
+const stocks = [
+  {
+    ticker: 'BTI',
+    shares: 319,
+    purchasePrice: 32.566,
+    purchaseDate: '2023-08-23',
+    dividendsReceived: 0.73 * 4 * 319, // čtyři kvartály
+  }
+];
+
+async function getQuote(ticker) {
+  const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${API_KEY}`);
+  const d = await r.json();
+  return d.c;
+}
+
+function daysHeld(purchaseDate) {
+  const diff = new Date() - new Date(purchaseDate);
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
+function format(val, isCZK) {
+  if (isCZK) return `${(val * 23.5).toFixed(0)} Kč`;
+  return `$${val.toFixed(2)}`;
+}
+
+async function refreshDashboard() {
+  const isCZK = document.getElementById('currencyToggle').checked;
+  const filter = document.getElementById('searchTicker').value.trim().toUpperCase();
+  const tbody = document.querySelector('#dashboardTable tbody');
+  tbody.innerHTML = '';
+
+  for (let s of stocks) {
+    if (!s.ticker.includes(filter)) continue;
+    const price = await getQuote(s.ticker);
+    const value = price * s.shares;
+    const pnl = value - s.purchasePrice * s.shares;
+    const days = daysHeld(s.purchaseDate);
+
+    const tr = document.createElement('tr');
+    tr.className = `stock-row ${pnl >= 0 ? 'plus' : 'minus'}`;
+    tr.innerHTML = `
+      <td>${s.ticker}</td>
+      <td>${s.shares}</td>
+      <td>${format(s.purchasePrice, isCZK)}</td>
+      <td>${format(price, isCZK)}</td>
+      <td>${format(value, isCZK)}</td>
+      <td>${format(pnl, isCZK)}</td>
+      <td>${days}</td>
+      <td>${format(s.dividendsReceived, isCZK)}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+document.getElementById('currencyToggle').addEventListener('change', refreshDashboard);
+document.getElementById('themeToggle').addEventListener('change', () => {
+  document.body.classList.toggle('dark-mode', document.getElementById('themeToggle').checked);
+});
+document.getElementById('searchTicker').addEventListener('input', refreshDashboard);
+
+// spustit po načtení:
+refreshDashboard();
 </script>
 
 </body>
