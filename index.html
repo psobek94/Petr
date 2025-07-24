@@ -115,25 +115,29 @@
     <a href="#" onclick="showSection('transactions')">Transakce</a>
   </nav>
 
-  <section id="dashboard">
-    <div>
-  <label><input type="checkbox" id="themeToggle"> Tmavý režim</label>
-  <label><input type="checkbox" id="currencyToggle"> Přepnout na CZK</label>
-</div>
-<input type="text" id="searchTicker" placeholder="Filtrovat ticker…" />
-<table id="dashboardTable">
-  <thead>
-    <tr>
-      <th>Ticker</th><th>Počet</th><th>Nákupní cena</th><th>Aktuální cena</th>
-      <th>Hodnota</th><th>Zisk/Ztráta</th><th>Dny držení</th><th>Vyplacená dividenda</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<section id="dashboard" class="container active">
+  <div class="dashboard-controls">
+    <label class="toggle-switch">
+      <input type="checkbox" id="themeToggle" />
+      <span class="slider"></span> Tmavý režim
+    </label>
 
-    <input type="text" id="searchTicker" placeholder="Zadej Ticker (např. BTI)" />
-  <h2>Dashboard</h2>
-  <div id="portfolio"></div>
+    <label class="toggle-switch">
+      <input type="checkbox" id="currencyToggle" />
+      <span class="slider"></span> Přepnout na CZK
+    </label>
+
+    <input type="text" id="searchTicker" placeholder="Filtrovat podle tickeru…" />
+  </div>
+
+  <h2>Přehled portfolia</h2>
+  <div id="portfolioTableContainer"></div>
+
+  <div class="summary-charts">
+    <canvas id="sectorChart"></canvas>
+    <canvas id="geoChart"></canvas>
+  </div>
+</section>
 
   <script>
     const API_KEY = "d20gpt1r01qrk6cku2mgd20gpt1r01qrk6cku2n0"; // nahraď vlastním klíčem
